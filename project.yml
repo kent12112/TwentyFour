@@ -1,0 +1,67 @@
+name: TwentyFour
+options:
+  bundleIdPrefix: com.kento
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  Supabase:
+    url: https://github.com/supabase/supabase-swift
+    from: 2.20.0
+
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "0.1.0"
+    CURRENT_PROJECT_VERSION: "1"
+
+targets:
+  TwentyFour:
+    type: application
+    platform: iOS
+    sources:
+      - path: TwentyFour
+    dependencies:
+      - package: Supabase
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.kento.twentyfour
+        TARGETED_DEVICE_FAMILY: "1"
+        INFOPLIST_FILE: TwentyFour/Info.plist
+        GENERATE_INFOPLIST_FILE: NO
+    info:
+      path: TwentyFour/Info.plist
+      properties:
+        CFBundleDisplayName: TwentyFour
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        UIUserInterfaceStyle: Light
+        NSCameraUsageDescription: TwentyFour uses the camera to shoot frames on your shared roll.
+        NSPhotoLibraryAddUsageDescription: Save your developed roll recap to Photos.
+        LSApplicationQueriesSchemes: [instagram-stories]
+        CFBundleURLTypes:
+          - CFBundleURLName: com.kento.twentyfour
+            CFBundleURLSchemes: [twentyfour]
+        SupabaseURL: $(SUPABASE_URL)
+        SupabaseAnonKey: $(SUPABASE_ANON_KEY)
+        FacebookAppID: $(FACEBOOK_APP_ID)
+    entitlements:
+      path: TwentyFour/TwentyFour.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+    configFiles:
+      Debug: Config/Secrets.xcconfig
+      Release: Config/Secrets.xcconfig
+
+  TwentyFourTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [TwentyFourTests]
+    dependencies:
+      - target: TwentyFour
+    settings:
+      base:
+        GENERATE_INFOPLIST_FILE: YES
