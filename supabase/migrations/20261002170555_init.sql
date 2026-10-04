@@ -151,7 +151,7 @@ where rolls.id = frames.roll_id) = 'developed')
 
 ---Function---
 
-create function public.create_roll(p_name text, p_event_type text, p_starts_at timestamptz, p_location text)
+create function public.create_roll(p_name text, p_event_type text default null, p_starts_at timestamptz default null, p_location text default null)
 returns public.rolls
 language plpgsql
 security definer

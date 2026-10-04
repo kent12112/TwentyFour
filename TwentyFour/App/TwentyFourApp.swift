@@ -15,11 +15,7 @@ struct TwentyFourApp: App {
         } else if model.profile == nil {
           NameView(model: model)
         }else {
-          Button("Sign Out") {
-            Task {
-              try? await SupabaseClient.shared.auth.signOut()
-            }
-          }
+          RollsListView()
         }
       }
       .task {
