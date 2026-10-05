@@ -4,16 +4,21 @@ import SwiftUI
 struct RollsListView: View {
   @State private var rolls: [Roll] = []
   @State private var showingNewRoll = false
+  let model: AppModel
   var body: some View {
     NavigationStack {
       List(rolls) { roll in
-        HStack {
-          Text(roll.name)
-          Spacer()
-          Text(String(roll.framesTaken) + "/" + String(roll.frameCount))
+        NavigationLink {
+          RollDetailView(roll: roll)
+        } label: {
+          HStack {
+            Text(roll.name)
+            Spacer()
+            Text(String(roll.framesTaken) + "/" + String(roll.frameCount))
+          }
         }
       }
-      .task { await loadRolls() }
+      .task(id: model.rollsVersion) { await loadRolls() }
       .navigationTitle("Your Rolls")
       .toolbar {
         Button("Sign Out") {
@@ -28,7 +33,7 @@ struct RollsListView: View {
         }
       }
       .sheet(isPresented: $showingNewRoll, onDismiss: {
-        Task {
+        Task{
           await loadRolls() 
         }
       }) {NewRollView()}

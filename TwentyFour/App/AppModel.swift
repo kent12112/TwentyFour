@@ -8,6 +8,7 @@ final class AppModel {
   var session: Session?
   var isLoading = true
   var profile: Profile?
+  var rollsVersion = 0
 
   func start() async {
     for await (_, session) in SupabaseClient.shared.auth.authStateChanges {
@@ -57,4 +58,28 @@ final class AppModel {
       print("Failed to create profile:", error)
     }
   }
+  func handleURL(_ url: URL) async {
+    guard url.scheme == "twentyfour", url.host == "join" else {return}
+    guard let rollId = UUID(uuidString: url.lastPathComponent) else {return}
+    guard let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+      .queryItems?
+      .first(where: {$0.name == "code"})?
+      .value else {return}
+
+    do {
+      let roll: Roll = try await SupabaseClient.shared
+        .rpc("join_roll", params: JoinRollParams(p_roll_id: rollId, p_invite_code: code))
+        .execute()
+        .value
+      print("Joined", roll.name)
+      rollsVersion += 1
+    } catch {
+      print("Failed to join roll:", error)
+    }
+  }
+}
+
+struct JoinRollParams: Encodable {
+  let p_roll_id: UUID
+  let p_invite_code: String
 }

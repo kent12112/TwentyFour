@@ -12,6 +12,7 @@ struct Roll: Codable, Identifiable {
   let status: String
   let developedAt: Date?
   let createdAt: Date
+  let inviteCode: String
 
   enum CodingKeys: String, CodingKey {
     case id
@@ -25,5 +26,6 @@ struct Roll: Codable, Identifiable {
     case status
     case developedAt = "developed_at"
     case createdAt = "created_at"
+    case inviteCode = "invite_code"
   }
 }

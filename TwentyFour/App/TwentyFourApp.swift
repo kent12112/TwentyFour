@@ -15,11 +15,14 @@ struct TwentyFourApp: App {
         } else if model.profile == nil {
           NameView(model: model)
         }else {
-          RollsListView()
+          RollsListView(model: model)
         }
       }
       .task {
         await model.start()
+      }
+      .onOpenURL {
+        url in Task { await model.handleURL(url)}
       }
     }
   }
