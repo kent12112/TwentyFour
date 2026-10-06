@@ -9,6 +9,7 @@ final class AppModel {
   var isLoading = true
   var profile: Profile?
   var rollsVersion = 0
+  var pendingInvite: PendingInvite?
 
   func start() async {
     for await (_, session) in SupabaseClient.shared.auth.authStateChanges {
@@ -20,6 +21,7 @@ final class AppModel {
 
       if let session = self.session {
         await loadProfile(userId: session.user.id)
+        await joinPendingInvite()
       } else {
         profile = nil
       }
@@ -54,6 +56,7 @@ final class AppModel {
         .insert(newProfile)
         .execute()
       profile = newProfile
+      await joinPendingInvite()
     } catch {
       print("Failed to create profile:", error)
     }
@@ -65,7 +68,13 @@ final class AppModel {
       .queryItems?
       .first(where: {$0.name == "code"})?
       .value else {return}
-
+    if profile == nil {
+      pendingInvite = PendingInvite(rollId: rollId, code: code)
+      return
+    }
+    await joinRoll(rollId: rollId, code: code)
+  }
+  func joinRoll(rollId: UUID, code: String) async {
     do {
       let roll: Roll = try await SupabaseClient.shared
         .rpc("join_roll", params: JoinRollParams(p_roll_id: rollId, p_invite_code: code))
@@ -77,9 +86,20 @@ final class AppModel {
       print("Failed to join roll:", error)
     }
   }
+
+  func joinPendingInvite() async {
+    guard profile != nil, let invite = pendingInvite else {return}
+    pendingInvite = nil
+    await joinRoll(rollId: invite.rollId, code: invite.code)
+  }
 }
 
 struct JoinRollParams: Encodable {
   let p_roll_id: UUID
   let p_invite_code: String
+}
+
+struct PendingInvite {
+  let rollId: UUID
+  let code: String
 }
