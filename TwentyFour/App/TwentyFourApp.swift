@@ -4,7 +4,7 @@ import Supabase
 @main
 struct TwentyFourApp: App {
   @State private var model = AppModel()
-
+  @Environment(\.scenePhase) private var scenePhase
   var body: some Scene {
     WindowGroup {
       Group  {
@@ -20,6 +20,11 @@ struct TwentyFourApp: App {
       }
       .task {
         await model.start()
+      }
+      .onChange(of: scenePhase) { _, newPhase in
+      if newPhase == .active {
+        Task { await UploadQueue.shared.processAll() }
+      }
       }
       .onOpenURL {
         url in Task { await model.handleURL(url)}
