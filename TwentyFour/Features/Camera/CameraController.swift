@@ -7,6 +7,7 @@ final class CameraController {
   private let photoOutput = AVCapturePhotoOutput()
   private var captureDelegate: PhotoCaptureDelegate?
   var isAuthorized = false
+  var isFlashOn = true
 
   func start() async {
     isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
@@ -21,10 +22,16 @@ final class CameraController {
   }
 
   func capturePhoto() async throws -> Data {
-    try await withCheckedThrowingContinuation { continuation in
+    let settings = AVCapturePhotoSettings()
+    if isFlashOn && photoOutput.supportedFlashModes.contains(.on) {
+      settings.flashMode = .on
+    } else {
+      settings.flashMode = .off
+    }
+    return try await withCheckedThrowingContinuation { continuation in
       let delegate = PhotoCaptureDelegate(continuation: continuation)
       captureDelegate = delegate
-      photoOutput.capturePhoto(with: AVCapturePhotoSettings(), delegate: delegate)
+      photoOutput.capturePhoto(with: settings, delegate: delegate)
     }
   }
 

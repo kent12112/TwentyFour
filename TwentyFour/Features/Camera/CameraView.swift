@@ -17,6 +17,9 @@ struct CameraView: View {
         HStack {
           Text(roll.name).font(.headline)
           Spacer()
+          Button{ camera.isFlashOn.toggle() } label: {
+            Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
+          }
           Button { dismiss()} label: {Image(systemName: "xmark")}
         }
         Spacer()
@@ -47,9 +50,10 @@ struct CameraView: View {
         .execute()
         .value
       let data = try await camera.capturePhoto()
+      let processed = FilmProcessor.process(data) ?? data
       let path = "\(roll.id.uuidString.lowercased())/\(frame.frameNumber).jpg"
 
-      try UploadQueue.shared.add(frame: frame, storagePath: path, data: data)
+      try UploadQueue.shared.add(frame: frame, storagePath: path, data: processed)
       framesTaken = frame.frameNumber
 
       Task { await UploadQueue.shared.processAll()}
