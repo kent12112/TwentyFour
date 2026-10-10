@@ -20,7 +20,12 @@ struct CameraView: View {
           Button{ camera.isFlashOn.toggle() } label: {
             Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
           }
-          Button { dismiss()} label: {Image(systemName: "xmark")}
+          Button { dismiss()} label: {
+            Image(systemName: "xmark")
+              .font(.title2)
+              .frame(width: 44, height: 44)
+              .contentShape(Rectangle())
+            }
         }
         Spacer()
         Text("\(framesTaken) / \(roll.frameCount)")
