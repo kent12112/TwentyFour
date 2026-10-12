@@ -1,5 +1,6 @@
 import Supabase
 import SwiftUI
+import UserNotifications
 
 struct RollsListView: View {
   @State private var rolls: [Roll] = []
@@ -37,6 +38,17 @@ struct RollsListView: View {
           await loadRolls() 
         }
       }) {NewRollView()}
+      .task {
+        do {
+          let granted = try await UNUserNotificationCenter.current()
+            .requestAuthorization(options: [.alert, .sound, .badge])
+          if granted {
+            UIApplication.shared.registerForRemoteNotifications()
+          }
+        } catch {
+          print("Notification permission error:", error)
+        }
+      }
     }
   }
   private func loadRolls() async {

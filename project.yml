@@ -52,6 +52,7 @@ targets:
       path: TwentyFour/TwentyFour.entitlements
       properties:
         com.apple.developer.applesignin: [Default]
+        aps-environment: development
     configFiles:
       Debug: Config/Secrets.xcconfig
       Release: Config/Secrets.xcconfig
