@@ -9,11 +9,28 @@ struct RollDetailView: View {
   @State private var photoURLs: [UUID: URL] = [:]
   @State private var names: [UUID: String] = [:]
   @State private var selectedFrame: Frame?
+  @State private var recapPhotos: [UIImage] = []
+
   private var current: Roll { latest ?? roll}
+  private var recapImage: Image? {
+    let renderer = ImageRenderer(content: RecapCardView(
+      roll: current,
+      photos: recapPhotos,
+      peopleCount: names.count
+    ))
+    renderer.scale = 3
+    guard let uiImage = renderer.uiImage else { return nil }
+    return Image(uiImage: uiImage)
+  }
   let roll: Roll
   var body: some View {
     VStack(spacing: 16) {
       if current.status == "developed" {
+        if !recapPhotos.isEmpty, let recapImage {
+          ShareLink(item: recapImage, preview: SharePreview(current.name, image: recapImage)) {
+            Label("Share recap", systemImage: "square.and.arrow.up")
+          }
+        }
         ScrollView {
           LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
             ForEach(frames) { frame in
@@ -23,6 +40,7 @@ struct RollDetailView: View {
               } placeholder: {
                 Rectangle().fill(.gray.opacity(0.2))
               }
+              .frame(minWidth: 0, maxWidth: .infinity)
               .frame(height: 160)
               .clipped()
 
@@ -89,6 +107,7 @@ struct RollDetailView: View {
         .value
       await loadPhotoURLs()
       await loadNames()
+      await loadRecapPhotos()
     } catch {
       print("Failed to reload roll:", error)
     }
@@ -119,5 +138,21 @@ struct RollDetailView: View {
         names[profile.id] = profile.displayName
       }
     } catch {print("Failed to load names:", error)}
+  }
+
+  private func loadRecapPhotos() async {
+    var images: [UIImage] = []
+    for frame in frames.prefix(9) {
+      guard let url = photoURLs[frame.id] else {continue}
+      do {
+        let (data, _) = try await URLSession.shared.data(from: url)
+        if let image = UIImage(data: data) {
+          images.append(image)
+        }
+      } catch {
+        print("Recap photo \(frame.frameNumber) failed:", error)
+      }
+    }
+    recapPhotos = images
   }
 }
