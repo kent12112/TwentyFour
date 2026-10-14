@@ -35,7 +35,7 @@ struct RecapCardView: View {
           .fill(Theme.accent)
           .frame(width: 8, height: 8)
       }
-      Text("ONE CAMERA · EVERYONE'S NIGHT")
+      Text("A shared disposable camera")
         .font(.system(size: 10, design: .monospaced))
     }
     .padding(24)
