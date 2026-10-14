@@ -38,6 +38,10 @@ async function sendPush(deviceToken: string, jwt: string, title: string, body: s
 }
 
 Deno.serve(async (req) => {
+  const secret = req.headers.get("x-webhook-secret")
+  if (secret !== Deno.env.get("WEBHOOK_SECRET")) {
+    return new Response("unauthorized", { status: 401 })
+  }
   const payload = await req.json()          // read the JSON the webhook sent
   const roll = payload.record               // the row after the change
   const oldRoll = payload.old_record        // the row before the change

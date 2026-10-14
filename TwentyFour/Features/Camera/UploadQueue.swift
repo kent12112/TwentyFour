@@ -57,11 +57,12 @@ final class UploadQueue {
             .from("frames")
             .upload(upload.storagePath, data: data, options: FileOptions(contentType: "image/jpeg"))
           } catch let error as StorageError where error.statusCode == "409" {}
-        let _: Roll = try await SupabaseClient.shared
-          .rpc("finalize_frame", params: FinalizeParams(p_frame_id: upload.frameId, p_storage_path: upload.storagePath))
-          .execute()
-          .value
-        
+        do {
+          let _: Roll = try await SupabaseClient.shared
+            .rpc("finalize_frame", params: FinalizeParams(p_frame_id: upload.frameId, p_storage_path: upload.storagePath))
+            .execute()
+            .value
+          } catch let error as PostgrestError where error.message == "Frame is not reserved" {}
         remove(upload)
       } catch {
         print("Upload of frame \(upload.frameNumber) failed, will retry:", error)
