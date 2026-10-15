@@ -57,16 +57,68 @@ struct RollDetailView: View {
           .padding()
         }
       }else {
-        Text(String(current.framesTaken) + "/" + String(current.frameCount))
-        Button("Shoot") {
-          showingCamera = true
+        VStack(alignment: .leading, spacing: 0) {
+          VStack(alignment: .leading, spacing: 4) {
+            Text(current.name)
+              .font(.system(size: 28, weight: .bold, design: .rounded))
+            Text(current.details)
+              .font(.system(size: 13, design: .rounded))
+              .foregroundStyle(Theme.ink.opacity(0.6))
+          }
+          Spacer()
+          VStack(spacing: 4) {
+            Text("\(current.framesTaken)")
+               .font(.system(size: 96, weight: .bold, design: .monospaced))
+            Text("of \(current.frameCount) shots")
+              .font(.system(size: 13, design: .rounded))
+              .foregroundStyle(Theme.ink.opacity(0.6))
+            HStack(spacing: 3) {
+              ForEach(0..<current.frameCount, id: \.self) { i in 
+                RoundedRectangle(cornerRadius: 2)
+                  .fill(i < current.framesTaken ? Theme.ink : Theme.ink.opacity(0.15))
+                  .frame(height: 24)
+              }
+            }
+            .padding(.top, 24)
+          }
+          .frame(maxWidth: .infinity)
+          Spacer()
+          VStack(spacing: 12) {
+            Text("Develops when the roll is full.")
+            .font(.system(size: 13, design: .rounded))
+            .foregroundStyle(Theme.ink.opacity(0.6))
+            .padding(.bottom, 4)
+            Button {
+              showingCamera = true
+            } label: { 
+              Label("Shoot", systemImage: "camera.fill")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
+            }
+            Button {
+              showingInvite = true
+            } label: {
+                Text("Invite friends")
+                .font(.system(size: 17, weight: .bold, design: .rounded))
+                .frame(maxWidth: .infinity, minHeight: 50)
+                .overlay(
+                  RoundedRectangle(cornerRadius: 12)
+                    .stroke(Theme.ink, lineWidth: 1.5)
+                )
+            }
+          }
         }
-        Button("Invite") {
-          showingInvite = true
-        }
+        .buttonStyle(.plain)
+        .padding(24)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       }
     }
-    .navigationTitle(current.name)
+    .background(Theme.paper)
+    .foregroundStyle(Theme.ink)
+    .navigationTitle(current.status == "developed" ? current.name : "")
+    .navigationBarTitleDisplayMode(.inline)
     .task { await reload() }
     .sheet(isPresented: $showingInvite){
         InviteView(roll: current)

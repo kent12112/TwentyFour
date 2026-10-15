@@ -8,14 +8,6 @@ struct RollRow: View {
   private var isDeveloped: Bool { roll.status == "developed"}
   private var members: [Member] { roll.members ?? [] }
 
-  private var details: String {
-    let date = (roll.startsAt ?? roll.createdAt).formatted(date: .abbreviated, time: .omitted)
-    if let location = roll.location, !location.isEmpty {
-      return "\(date) · \(location)"
-    }
-    return date
-  }
-
   private func loadCover() async {
     guard isDeveloped else {return}
 
@@ -28,7 +20,6 @@ struct RollRow: View {
         .limit(1)
         .execute()
         .value
-
       guard let path = firstFrames.first?.storagePath else { return }
       coverURL = try await SupabaseClient.shared.storage
         .from("frames")
@@ -44,7 +35,7 @@ struct RollRow: View {
         Text(roll.name)
           .font(.system(size: 17, weight: .bold, design: .rounded))
           .foregroundStyle(coverURL == nil ? Theme.ink : .white)
-        Text(details)
+        Text(roll.details)
           .font(.system(size: 13, design: .rounded))
           .foregroundStyle(coverURL == nil ? Theme.ink.opacity(0.6) : .white.opacity(0.85))
         HStack(spacing: -8) {

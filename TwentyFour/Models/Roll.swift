@@ -33,3 +33,12 @@ struct Roll: Codable, Identifiable {
     case members
   }
 }
+extension Roll {
+   var details: String {
+      let date = (startsAt ?? createdAt).formatted(date: .abbreviated, time: .omitted)
+      if let location = location, !location.isEmpty {
+        return "\(date) · \(location)"
+      }
+      return date
+    }
+}
