@@ -13,7 +13,9 @@ struct RecapEditorView: View {
   @State private var showingRecap = false
   @Environment(\.dismiss) private var dismiss
 
-  private let maxPhotos = 9
+  @State private var template: RecapTemplate = .filmStrip
+  private var maxPhotos: Int { template.maxPhotos }
+
 
   private var selectedImages: [UIImage] {
     selected.compactMap { images[$0] }
@@ -23,7 +25,8 @@ struct RecapEditorView: View {
       content: RecapCardView(
         roll: roll,
         photos: selectedImages,
-        peopleCount: peopleCount
+        peopleCount: peopleCount,
+        template: template
       )
     )
     renderer.scale = 3
@@ -35,12 +38,25 @@ struct RecapEditorView: View {
     NavigationStack {
       ZStack {
         Theme.paper.ignoresSafeArea()
-
         VStack(spacing: 16) {
-          RecapCardView(roll: roll, photos: selectedImages, peopleCount: peopleCount)
+          RecapCardView(roll: roll, photos: selectedImages, peopleCount: peopleCount, template: template)
             .scaleEffect(0.5)
             .frame(width: 180, height: 320)
             .shadow(color: .black.opacity(0.2), radius: 12, y: 6)
+
+          Picker("Template", selection: $template) {
+            ForEach(RecapTemplate.allCases) { option in
+              Text(option.title).tag(option)
+            }
+          }
+          .pickerStyle(.segmented)
+          .padding(.horizontal, 16)
+          .onChange(of: template) {
+            if selected.count > maxPhotos {
+              selected = Array(selected.prefix(maxPhotos))
+            }
+          }
+
           Text("Pick up to \(maxPhotos) · \(selected.count) selected")
             .font(.system(size: 13, design: .rounded))
             .foregroundStyle(Theme.ink.opacity(0.6))
@@ -101,11 +117,12 @@ struct RecapEditorView: View {
 
     }
     .tint(Theme.ink)
-    .task { await loadImages() }
+    .task(id: photoURLs.count) { await loadImages() }
   }
 
   private func loadImages() async {
     for frame in frames {
+      if images[frame.id] != nil { continue }
       guard let url = photoURLs[frame.id] else { continue }
       do {
         let (data, _) = try await URLSession.shared.data(from: url)
