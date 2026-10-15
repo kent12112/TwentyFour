@@ -74,7 +74,7 @@ struct RollRow: View {
           LinearGradient(colors: [.black.opacity(0.65), .black.opacity(0.15)],
             startPoint: .leading, endPoint: .trailing)
         )
-      }
+      } else { Color.white }
     }
     .clipShape(RoundedRectangle(cornerRadius: 16))
     .task {await loadCover()}

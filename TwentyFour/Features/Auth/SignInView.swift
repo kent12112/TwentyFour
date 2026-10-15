@@ -16,7 +16,7 @@ struct SignInView: View {
           .overlay(alignment: .bottomTrailing) {
             Text("'26 10 14")
               .font(.system(size: 13, weight: .semibold, design: .monospaced))
-              .foregroundStyle(Color(red: 1, green: 0.55, blue: 0.15))
+              .foregroundStyle(Theme.stamp)
               .padding(8)
           }
           .padding(8)

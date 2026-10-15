@@ -24,41 +24,8 @@ struct RollDetailView: View {
   }
   let roll: Roll
   var body: some View {
-    VStack(spacing: 16) {
-      if current.status == "developed" {
-        if !recapPhotos.isEmpty, let recapImage {
-          ShareLink(item: recapImage, preview: SharePreview(current.name, image: recapImage)) {
-            Label("Share recap", systemImage: "square.and.arrow.up")
-          }
-        }
-        ScrollView {
-          LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 16) {
-            ForEach(frames) { frame in
-            VStack(spacing: 4){
-              AsyncImage(url: photoURLs[frame.id]) {
-                image in image.resizable().scaledToFill()
-              } placeholder: {
-                Rectangle().fill(.gray.opacity(0.2))
-              }
-              .frame(minWidth: 0, maxWidth: .infinity)
-              .frame(height: 160)
-              .clipped()
-
-              Text("\(frame.frameNumber) / \(current.frameCount)")
-                .font(.caption.monospacedDigit())
-              Text(names[frame.photographerId ?? UUID()] ?? "Unknown")
-                .font(.caption2)
-            }
-            .onTapGesture {
-              selectedFrame = frame
-            }
-            } 
-          }
-          .padding()
-        }
-      }else {
-        VStack(alignment: .leading, spacing: 0) {
-          VStack(alignment: .leading, spacing: 4) {
+    VStack(alignment: .leading, spacing: 0) {
+       VStack(alignment: .leading, spacing: 4) {
             Text(current.name)
               .font(.system(size: 28, weight: .bold, design: .rounded))
             Text(current.details)
@@ -67,6 +34,31 @@ struct RollDetailView: View {
             MemberAvatars(members: current.members ?? [])
               .padding(.top, 4)
           }
+          .padding([.horizontal, .top], 24)
+      if current.status == "developed" {
+        ScrollView {
+          LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
+            ForEach(frames) { frame in
+            Color.clear
+              .aspectRatio(1, contentMode: .fit)
+              .overlay {
+                 AsyncImage(url: photoURLs[frame.id]) {
+                  image in image.resizable().scaledToFill()
+                } placeholder: {
+                  Theme.ink.opacity(0.08)
+                }
+              }
+              .clipped()
+              .contentShape(Rectangle())
+              .onTapGesture {
+                selectedFrame = frame
+              }
+            } 
+          }
+          .padding()
+        }
+      }else {
+        VStack(alignment: .leading, spacing: 0) {
           Spacer()
           VStack(spacing: 4) {
             Text("\(current.framesTaken)")
@@ -114,16 +106,25 @@ struct RollDetailView: View {
         }
         .buttonStyle(.plain)
         .padding(24)
-        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
       }
     }
+    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .background(Theme.paper)
     .foregroundStyle(Theme.ink)
-    .navigationTitle(current.status == "developed" ? current.name : "")
     .navigationBarTitleDisplayMode(.inline)
+    .toolbar {
+      ToolbarItem(placement: .topBarTrailing) {
+        if current.status == "developed", !recapPhotos.isEmpty, let recapImage {
+          ShareLink(item: recapImage, preview: SharePreview(current.name, image: recapImage)) {
+            Image(systemName: "square.and.arrow.up")
+          }
+        }
+      }
+    }
     .task { await reload() }
     .sheet(isPresented: $showingInvite){
         InviteView(roll: current)
+          .presentationDetents([.medium, .large])
       }  
     .fullScreenCover(isPresented: $showingCamera, onDismiss: {
       Task { await reload() }
