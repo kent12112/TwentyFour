@@ -64,6 +64,8 @@ struct RollDetailView: View {
             Text(current.details)
               .font(.system(size: 13, design: .rounded))
               .foregroundStyle(Theme.ink.opacity(0.6))
+            MemberAvatars(members: current.members ?? [])
+              .padding(.top, 4)
           }
           Spacer()
           VStack(spacing: 4) {
@@ -136,7 +138,7 @@ struct RollDetailView: View {
     do {
       latest = try await SupabaseClient.shared
         .from("rolls")
-        .select()
+        .select("*, members:roll_members(profile:profiles(id, display_name, color))")
         .eq("id", value: roll.id)
         .single()
         .execute()

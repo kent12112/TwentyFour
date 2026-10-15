@@ -38,22 +38,10 @@ struct RollRow: View {
         Text(roll.details)
           .font(.system(size: 13, design: .rounded))
           .foregroundStyle(coverURL == nil ? Theme.ink.opacity(0.6) : .white.opacity(0.85))
-        HStack(spacing: -8) {
-          ForEach(members.prefix(3), id: \.profile.id) { member in
-            Text(String(member.profile.displayName.prefix(1)))
-              .font(.system(size: 11, weight: .bold, design: .rounded))
-              .frame(width: 24, height: 24)
-              .background(Theme.ink, in: Circle())
-              .foregroundStyle(.white)
-              .overlay(Circle().stroke(Theme.paper, lineWidth: 2))
-          }
-          if members.count > 3 {
-            Text("+\(members.count-3)")
-              .foregroundStyle(coverURL == nil ? Theme.ink.opacity(0.6) : .white.opacity(0.85))
-              .font(.system(size: 12, design: .rounded))
-              .padding(.leading, 12)
-          }
-        }
+        MemberAvatars(
+          members: members,
+          textColor: coverURL == nil ? Theme.ink.opacity(0.6) : .white.opacity(0.85)
+        )
         .padding(.top, 4)
       }
       Spacer()
