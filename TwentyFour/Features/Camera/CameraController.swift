@@ -7,6 +7,8 @@ final class CameraController {
   private let photoOutput = AVCapturePhotoOutput()
   private var captureDelegate: PhotoCaptureDelegate?
   private var currentInput: AVCaptureDeviceInput?
+  // reads how the phone is physically held, even though the screen is locked to portrait
+  private var rotationCoordinator: AVCaptureDevice.RotationCoordinator?
   var isAuthorized = false
   var isFlashOn = true
   var position: AVCaptureDevice.Position = .back
@@ -31,6 +33,13 @@ final class CameraController {
     } else {
       settings.flashMode = .off
     }
+    // turn the photo to match how the phone is held: sideways shots become landscape photos
+    if let rotationCoordinator, let connection = photoOutput.connection(with: .video) {
+      let angle = rotationCoordinator.videoRotationAngleForHorizonLevelCapture
+      if connection.isVideoRotationAngleSupported(angle) {
+        connection.videoRotationAngle = angle
+      }
+    }
     return try await withCheckedThrowingContinuation { continuation in
       let delegate = PhotoCaptureDelegate(continuation: continuation)
       captureDelegate = delegate
@@ -52,6 +61,7 @@ final class CameraController {
       session.addInput(newInput)
       currentInput = newInput
       position = newPosition
+      rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: nil)
     } else if let currentInput {
       session.addInput(currentInput)  // put the old camera back if the new one fails
     }
@@ -92,6 +102,7 @@ final class CameraController {
     session.addInput(input)
     session.addOutput(photoOutput)
     currentInput = input
+    rotationCoordinator = AVCaptureDevice.RotationCoordinator(device: camera, previewLayer: nil)
     session.commitConfiguration()
   }
 }

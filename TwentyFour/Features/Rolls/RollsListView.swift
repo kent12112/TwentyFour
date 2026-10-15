@@ -9,15 +9,13 @@ struct RollsListView: View {
   let model: AppModel
   var body: some View {
     NavigationStack {
-      VStack(spacing: 0) {
+      VStack(alignment: .leading, spacing: 0) {
+        // header: TWENTYFOUR · settings
         HStack {
-          HStack(spacing: 6) {
-            Text("TwentyFour")
-              .font(.custom("ChalkboardSE-Bold", size: 26))
-            Circle()
-              .fill(Theme.accent)
-              .frame(width: 8, height: 8)
-          }
+          Text("TwentyFour")
+            .font(Theme.sans(17, .bold))
+            .textCase(.uppercase)
+            .tracking(0.5)
           Spacer()
           Menu {
             Button("Sign Out", role: .destructive) {
@@ -26,45 +24,50 @@ struct RollsListView: View {
               }
             }
           } label: {
-            Image(systemName: "person.crop.circle")
-              .font(.system(size: 26))
+            Image(systemName: "gearshape")
+              .font(.system(size: 17, weight: .light))
+              .frame(width: 44, height: 44)
+              .contentShape(Rectangle())
           }
         }
-        .padding(.horizontal)
-        .foregroundStyle(Theme.ink)
+        .padding(.leading, 24)
+        .padding(.trailing, 12)
+        .padding(.top, 8)
+
+        // title
+        VStack(alignment: .leading, spacing: 10) {
+          Text("Your Rolls")
+            .font(Theme.sans(30))
+          Text("One camera, passed around. Everyone gets the photos when the roll is done.")
+            .font(Theme.sans(13))
+            .foregroundStyle(Theme.muted)
+            .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(.horizontal, 24)
+        .padding(.top, 40)
+
         Button {
           showingNewRoll = true
         } label: {
           NewRollCard()
         }
         .buttonStyle(.plain)
-        .padding()
-        VStack(alignment: .leading, spacing: 4) {
-          Text("Your Rolls")
-            .font(.system(size: 22, weight: .bold, design: .rounded))
-          Text("Photos stay hidden until all 24 shots are taken.")
-            .font(.system(size: 13, design: .rounded))
-            .foregroundStyle(Theme.ink.opacity(0.6))
-        }
-        .foregroundStyle(Theme.ink)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(.horizontal)
-        .padding(.bottom, 10)
+        .padding(.horizontal, 24)
+        .padding(.top, 24)
+        .padding(.bottom, 16)
+
         if isLoading {
           ProgressView()
-            .frame(maxHeight: .infinity)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else if rolls.isEmpty {
           VStack(spacing: 8) {
-            Image(systemName: "camera")
-              .font(.system(size: 36))
             Text("No rolls yet")
-              .font(.system(size: 16, weight: .bold, design: .rounded))
+              .font(Theme.sans(15, .medium))
             Text("Create one above, or open an invite link from a friend.")
-              .font(.system(size: 13, design: .rounded))
-              .foregroundStyle(Theme.ink.opacity(0.6))
+              .font(Theme.sans(13))
+              .foregroundStyle(Theme.muted)
           }
           .multilineTextAlignment(.center)
-          .foregroundStyle(Theme.ink)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .padding(.horizontal, 32)
         } else {
@@ -78,14 +81,18 @@ struct RollsListView: View {
               }
               .opacity(0)
             }
-            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+            .listRowInsets(EdgeInsets(top: 0, leading: 24, bottom: 0, trailing: 24))
             .listRowBackground(Theme.paper)
+            .listRowSeparatorTint(Theme.line)
+            .alignmentGuide(.listRowSeparatorLeading) { _ in 0 }
+            .alignmentGuide(.listRowSeparatorTrailing) { d in d.width }
           }
           .listStyle(.plain)
           .scrollContentBackground(.hidden)
           .refreshable { await loadRolls() }
         }
       }
+      .foregroundStyle(Theme.ink)
       .background(Theme.paper)
       .toolbar(.hidden, for: .navigationBar)
       .task(id: model.rollsVersion) { await loadRolls() }

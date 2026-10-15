@@ -1,12 +1,13 @@
 import Foundation
 
 enum RecapTemplate: String, CaseIterable, Identifiable {
-  case filmStrip, prints, hero
+  case mosaic, filmStrip, prints, hero
 
   var id: Self { self }
 
   var title: String {
     switch self {
+    case .mosaic: "Mosaic"
     case .filmStrip: "Film"
     case .prints: "Prints"
     case .hero: "Hero"
@@ -15,7 +16,8 @@ enum RecapTemplate: String, CaseIterable, Identifiable {
 
   var maxPhotos: Int {
     switch self {
-    case .filmStrip: 9
+    case .mosaic: 6
+    case .filmStrip: 12
     case .prints: 5
     case .hero: 1
     }

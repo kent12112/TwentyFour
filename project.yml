@@ -42,6 +42,14 @@ targets:
         NSCameraUsageDescription: TwentyFour uses the camera to shoot frames on your shared roll.
         NSPhotoLibraryAddUsageDescription: Save your developed roll recap to Photos.
         LSApplicationQueriesSchemes: [instagram-stories]
+        UIAppFonts:
+          - Inter-Regular.ttf
+          - Inter-Medium.ttf
+          - Inter-SemiBold.ttf
+          - Inter-Bold.ttf
+          - JetBrainsMono-Regular.ttf
+          - JetBrainsMono-Medium.ttf
+          - JetBrainsMono-Bold.ttf
         CFBundleURLTypes:
           - CFBundleURLName: com.kento.twentyfour
             CFBundleURLSchemes: [twentyfour]

@@ -15,103 +15,42 @@ struct RollDetailView: View {
   let roll: Roll
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      VStack(alignment: .leading, spacing: 4) {
-        Text(current.name)
-          .font(.system(size: 28, weight: .bold, design: .rounded))
-        Text(current.details)
-          .font(.system(size: 13, design: .rounded))
-          .foregroundStyle(Theme.ink.opacity(0.6))
-        MemberAvatars(members: current.members ?? [])
-          .padding(.top, 4)
-      }
-      .padding([.horizontal, .top], 24)
-      if current.status == "developed" {
+      header
+
+      if current.isDeveloped {
         ScrollView {
-          LazyVGrid(
-            columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2
-          ) {
-            ForEach(frames) { frame in
-              Color.clear
-                .aspectRatio(1, contentMode: .fit)
-                .overlay {
-                  AsyncImage(url: photoURLs[frame.id]) {
-                    image in
-                    image.resizable().scaledToFill()
-                  } placeholder: {
-                    Theme.ink.opacity(0.08)
-                  }
-                }
-                .clipped()
-                .contentShape(Rectangle())
-                .onTapGesture {
-                  selectedFrame = frame
-                }
-            }
+          DevelopedGrid(
+            frames: frames,
+            photoURLs: photoURLs,
+            frameCount: current.frameCount
+          ) { frame in
+            selectedFrame = frame
           }
-          .padding()
         }
       } else {
-        VStack(alignment: .leading, spacing: 0) {
-          Spacer()
-          VStack(spacing: 4) {
-            Text("\(current.framesTaken)")
-              .font(.system(size: 96, weight: .bold, design: .monospaced))
-            Text("of \(current.frameCount) shots")
-              .font(.system(size: 13, design: .rounded))
-              .foregroundStyle(Theme.ink.opacity(0.6))
-            HStack(spacing: 3) {
-              ForEach(0..<current.frameCount, id: \.self) { i in
-                RoundedRectangle(cornerRadius: 2)
-                  .fill(i < current.framesTaken ? Theme.ink : Theme.ink.opacity(0.15))
-                  .frame(height: 24)
-              }
-            }
-            .padding(.top, 24)
-          }
-          .frame(maxWidth: .infinity)
-          Spacer()
-          VStack(spacing: 12) {
-            Text("Develops when the roll is full.")
-              .font(.system(size: 13, design: .rounded))
-              .foregroundStyle(Theme.ink.opacity(0.6))
-              .padding(.bottom, 4)
-            Button {
-              showingCamera = true
-            } label: {
-              Label("Shoot", systemImage: "camera.fill")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
-            }
-            Button {
-              showingInvite = true
-            } label: {
-              Text("Invite friends")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .overlay(
-                  RoundedRectangle(cornerRadius: 12)
-                    .stroke(Theme.ink, lineWidth: 1.5)
-                )
-            }
-          }
-        }
-        .buttonStyle(.plain)
-        .padding(24)
+        inCamera
       }
     }
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
     .background(Theme.paper)
     .foregroundStyle(Theme.ink)
     .navigationBarTitleDisplayMode(.inline)
+    .toolbarRole(.editor)
+    .toolbarBackground(Theme.paper, for: .navigationBar)
     .toolbar {
+      ToolbarItem(placement: .principal) {
+        Text("TwentyFour")
+          .font(Theme.sans(13, .bold))
+          .textCase(.uppercase)
+          .tracking(0.5)
+      }
       ToolbarItem(placement: .topBarTrailing) {
-        if current.status == "developed" {
+        if current.isDeveloped {
           Button {
             showingRecap = true
           } label: {
             Image(systemName: "square.and.arrow.up")
+              .font(.system(size: 16, weight: .light))
           }
         }
       }
@@ -141,6 +80,82 @@ struct RollDetailView: View {
       frame in FrameViewer(frames: frames, photoURLs: photoURLs, names: names, startID: frame.id)
     }
   }
+  private var peopleCount: Int {
+    max(current.members?.count ?? 0, names.count)
+  }
+
+  // big uppercase name, meta line on both sides, divider
+  private var header: some View {
+    VStack(alignment: .leading, spacing: 12) {
+      Text(current.name)
+        .font(Theme.sans(28))
+        .textCase(.uppercase)
+        .lineLimit(2)
+      HStack {
+        Text(current.metaLine)
+        Spacer()
+        Text("\(current.frameCount) frames · \(peopleCount) \(peopleCount == 1 ? "person" : "people")")
+      }
+      .metaStyle(9)
+    }
+    .padding(.horizontal, 24)
+    .padding(.top, 8)
+    .padding(.bottom, 20)
+    .overlay(alignment: .bottom) {
+      Rectangle().fill(Theme.line).frame(height: 1)
+    }
+  }
+
+  // while shooting: big counter, frame bars, members, buttons
+  private var inCamera: some View {
+    VStack(alignment: .leading, spacing: 0) {
+      Spacer()
+      VStack(spacing: 10) {
+        Text(String(format: "%02d", current.framesTaken))
+          .font(Theme.mono(88, .medium))
+        Text("of \(current.frameCount) frames")
+          .metaStyle(10)
+        HStack(spacing: 3) {
+          ForEach(0..<current.frameCount, id: \.self) { i in
+            Rectangle()
+              .fill(i < current.framesTaken ? Theme.ink : Theme.line)
+              .frame(height: 22)
+          }
+        }
+        .padding(.top, 20)
+        MemberAvatars(members: current.members ?? [])
+          .padding(.top, 20)
+      }
+      .frame(maxWidth: .infinity)
+      Spacer()
+      VStack(spacing: 10) {
+        Text("Develops when the roll is full")
+          .metaStyle(9)
+          .padding(.bottom, 6)
+        Button {
+          showingCamera = true
+        } label: {
+          Label("Shoot", systemImage: "camera")
+            .font(Theme.sans(15, .medium))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Theme.ink)
+        }
+        Button {
+          showingInvite = true
+        } label: {
+          Text("Invite friends")
+            .font(Theme.sans(15, .medium))
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .overlay(Rectangle().stroke(Theme.ink, lineWidth: 1))
+            .contentShape(Rectangle())
+        }
+      }
+    }
+    .buttonStyle(.plain)
+    .padding(24)
+  }
+
   private func reload() async {
     do {
       latest = try await SupabaseClient.shared

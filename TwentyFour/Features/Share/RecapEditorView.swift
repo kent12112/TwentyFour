@@ -10,114 +10,200 @@ struct RecapEditorView: View {
   // owned by this screen
   @State private var images: [UUID: UIImage] = [:]
   @State private var selected: [UUID] = []
-  @State private var showingRecap = false
+  @State private var template: RecapTemplate = .mosaic
+  @State private var saved = false
+  @State private var instagramProblem: InstagramStories.Problem?
   @Environment(\.dismiss) private var dismiss
 
-  @State private var template: RecapTemplate = .filmStrip
   private var maxPhotos: Int { template.maxPhotos }
-
 
   private var selectedImages: [UIImage] {
     selected.compactMap { images[$0] }
   }
-  private var renderedImage: Image? {
-    let renderer = ImageRenderer(
-      content: RecapCardView(
-        roll: roll,
-        photos: selectedImages,
-        peopleCount: peopleCount,
-        template: template
-      )
-    )
+
+  private var card: RecapCardView {
+    RecapCardView(roll: roll, photos: selectedImages, peopleCount: peopleCount, template: template)
+  }
+
+  // the card rendered at 3× = 1080×1920, the size of an Instagram story
+  private func renderCard() -> UIImage? {
+    let renderer = ImageRenderer(content: card)
     renderer.scale = 3
-    guard let uiImage = renderer.uiImage else { return nil }
-    return Image(uiImage: uiImage)
+    return renderer.uiImage
   }
 
   var body: some View {
     NavigationStack {
-      ZStack {
-        Theme.paper.ignoresSafeArea()
-        VStack(spacing: 16) {
-          RecapCardView(roll: roll, photos: selectedImages, peopleCount: peopleCount, template: template)
-            .scaleEffect(0.5)
-            .frame(width: 180, height: 320)
-            .shadow(color: .black.opacity(0.2), radius: 12, y: 6)
+      VStack(spacing: 0) {
+        card
+          .scaleEffect(0.6)
+          .frame(width: 216, height: 384)
+          .shadow(color: .black.opacity(0.12), radius: 14, y: 6)
+          .padding(.top, 12)
 
-          Picker("Template", selection: $template) {
-            ForEach(RecapTemplate.allCases) { option in
-              Text(option.title).tag(option)
-            }
-          }
-          .pickerStyle(.segmented)
-          .padding(.horizontal, 16)
-          .onChange(of: template) {
-            if selected.count > maxPhotos {
-              selected = Array(selected.prefix(maxPhotos))
-            }
-          }
+        templateTabs
+          .padding(.top, 18)
 
-          Text("Pick up to \(maxPhotos) · \(selected.count) selected")
-            .font(.system(size: 13, design: .rounded))
-            .foregroundStyle(Theme.ink.opacity(0.6))
-          ScrollView {
-            LazyVGrid(
-              columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 4), spacing: 4
-            ) {
-              ForEach(frames) { frame in
-                let number = selected.firstIndex(of: frame.id)
+        Text("Pick up to \(maxPhotos) · \(selected.count) selected")
+          .metaStyle(8)
+          .padding(.top, 14)
+          .padding(.bottom, 8)
 
-                Color.clear
-                  .aspectRatio(1, contentMode: .fit)
-                  .overlay {
-                    if let image = images[frame.id] {
-                      Image(uiImage: image)
-                        .resizable()
-                        .scaledToFill()
-                    } else {
-                      Theme.ink.opacity(0.08)
-                    }
-                  }
-                  .clipped()
-                  .opacity(number == nil ? 0.5 : 1)
-                  .overlay(alignment: .topTrailing) {
-                    if let number {
-                      Text("\(number + 1)")
-                        .font(.system(size: 12, weight: .bold, design: .rounded))
-                        .foregroundStyle(.white)
-                        .frame(width: 22, height: 22)
-                        .background(Theme.accent, in: Circle())
-                        .padding(4)
-                    }
-                  }
-                  .contentShape(Rectangle())
-                  .onTapGesture { toggle(frame.id) }
-              }
-            }
-            .padding(.horizontal, 16)
-          }
-        }
-        .padding(.top, 8)
+        photoPicker
+
+        bottomButtons
       }
-      .navigationTitle("Recap")
+      .background(Theme.paper)
+      .foregroundStyle(Theme.ink)
       .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Theme.paper, for: .navigationBar)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") { dismiss() }
+            .font(Theme.sans(15))
+            .foregroundStyle(Theme.muted)
+        }
+        ToolbarItem(placement: .principal) {
+          Text("Share")
+            .font(Theme.sans(16, .medium))
         }
         ToolbarItem(placement: .confirmationAction) {
-          if !selected.isEmpty, let image = renderedImage {
-            ShareLink(item: image, preview: SharePreview(roll.name, image: image)) {
-              Text("Share")
-                .bold()
+          if !selected.isEmpty, let image = renderCard() {
+            let picture = Image(uiImage: image)
+            ShareLink(item: picture, preview: SharePreview(roll.name, image: picture)) {
+              HStack(spacing: 4) {
+                Text("Export")
+                Image(systemName: "arrow.up.right")
+                  .font(.system(size: 11, weight: .medium))
+              }
+              .font(Theme.sans(15, .medium))
             }
           }
         }
       }
-
+      .onChange(of: template) {
+        if selected.count > maxPhotos {
+          selected = Array(selected.prefix(maxPhotos))
+        }
+        saved = false
+      }
+      .onChange(of: selected) { saved = false }
+      .alert(
+        instagramProblem == .notInstalled ? "Instagram isn't installed" : "Instagram sharing isn't set up",
+        isPresented: Binding(get: { instagramProblem != nil }, set: { if !$0 { instagramProblem = nil } })
+      ) {
+        Button("OK", role: .cancel) {}
+      } message: {
+        Text(
+          instagramProblem == .notInstalled
+            ? "Install Instagram, or use Export to share another way."
+            : "Add a Meta App ID to FACEBOOK_APP_ID in Secrets.xcconfig."
+        )
+      }
     }
     .tint(Theme.ink)
     .task(id: photoURLs.count) { await loadImages() }
+  }
+
+  // MOSAIC  FILM  PRINTS  HERO — underlined when chosen
+  private var templateTabs: some View {
+    HStack(spacing: 22) {
+      ForEach(RecapTemplate.allCases) { option in
+        Button {
+          template = option
+        } label: {
+          VStack(spacing: 5) {
+            Text(option.title)
+              .font(Theme.mono(10, template == option ? .medium : .regular))
+              .textCase(.uppercase)
+              .tracking(0.8)
+              .foregroundStyle(template == option ? Theme.ink : Theme.muted)
+            Rectangle()
+              .fill(template == option ? Theme.ink : .clear)
+              .frame(height: 1)
+          }
+          .fixedSize()
+        }
+        .buttonStyle(.plain)
+      }
+    }
+  }
+
+  private var photoPicker: some View {
+    ScrollView {
+      LazyVGrid(
+        columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 4
+      ) {
+        ForEach(frames) { frame in
+          let number = selected.firstIndex(of: frame.id)
+
+          Color.clear
+            .aspectRatio(1, contentMode: .fit)
+            .overlay {
+              if let image = images[frame.id] {
+                Image(uiImage: image)
+                  .resizable()
+                  .scaledToFill()
+              } else {
+                Theme.line
+              }
+            }
+            .clipped()
+            .opacity(number == nil ? 0.45 : 1)
+            .overlay(alignment: .topTrailing) {
+              if let number {
+                Text("\(number + 1)")
+                  .font(Theme.mono(9, .medium))
+                  .foregroundStyle(.white)
+                  .frame(width: 18, height: 18)
+                  .background(Theme.ink)
+                  .padding(3)
+              }
+            }
+            .contentShape(Rectangle())
+            .onTapGesture { toggle(frame.id) }
+        }
+      }
+      .padding(.horizontal, 24)
+    }
+  }
+
+  // ⬇ save · Share to Instagram Story
+  private var bottomButtons: some View {
+    HStack(spacing: 10) {
+      Button {
+        guard let image = renderCard() else { return }
+        UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil)
+        saved = true
+      } label: {
+        Image(systemName: saved ? "checkmark" : "arrow.down.to.line")
+          .font(.system(size: 16, weight: .light))
+          .frame(width: 54, height: 54)
+          .overlay(Rectangle().stroke(Theme.line, lineWidth: 1))
+          .contentShape(Rectangle())
+      }
+
+      Button {
+        guard let image = renderCard() else { return }
+        instagramProblem = InstagramStories.share(image)
+      } label: {
+        HStack(spacing: 10) {
+          Image(systemName: "camera")
+            .font(.system(size: 15, weight: .light))
+          Text("Share to Instagram Story")
+            .font(Theme.sans(15, .medium))
+        }
+        .foregroundStyle(.white)
+        .frame(maxWidth: .infinity, minHeight: 54)
+        .background(Theme.ink)
+      }
+    }
+    .buttonStyle(.plain)
+    .disabled(selected.isEmpty)
+    .opacity(selected.isEmpty ? 0.4 : 1)
+    .padding(.horizontal, 24)
+    .padding(.top, 12)
+    .padding(.bottom, 8)
   }
 
   private func loadImages() async {
@@ -136,12 +222,15 @@ struct RecapEditorView: View {
       }
     }
   }
+
   private func toggle(_ id: UUID) {
     guard images[id] != nil else { return }
     if let index = selected.firstIndex(of: id) {
       selected.remove(at: index)
     } else if selected.count < maxPhotos {
       selected.append(id)
+    } else if maxPhotos == 1 {
+      selected = [id]  // Hero: tapping another photo swaps it in
     }
   }
 }

@@ -3,23 +3,23 @@ import SwiftUI
 struct NewRollCard: View {
   var body: some View {
     HStack(spacing: 14) {
-      VStack(alignment: .leading, spacing: 2) {
+      VStack(alignment: .leading, spacing: 6) {
         Text("Create a new roll")
-          .font(.system(size: 17, weight: .bold, design: .rounded))
-        Text("24 shots · invite your friends")
-          .font(.system(size: 13, design: .rounded))
-          .foregroundStyle(.white.opacity(0.6))
+          .font(Theme.sans(16, .medium))
+          .foregroundStyle(.white)
+        Text("24 frames · invite friends")
+          .metaStyle(9, color: .white.opacity(0.55))
       }
       Spacer()
-      Image(systemName: "plus.circle.fill")
-        .font(.system(size: 30))
-        .foregroundStyle(.white)
+      Image(systemName: "plus")
+        .font(.system(size: 16, weight: .light))
+        .foregroundStyle(Theme.ink)
+        .frame(width: 36, height: 36)
+        .background(.white, in: Circle())
     }
-    .padding(20)
-    .foregroundStyle(.white)
-    .background(
-      Theme.ink, in: RoundedRectangle(cornerRadius: 16)
-    )
+    .padding(.horizontal, 18)
+    .padding(.vertical, 20)
+    .background(Theme.ink)
   }
 }
 

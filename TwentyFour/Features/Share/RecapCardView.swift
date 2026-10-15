@@ -1,13 +1,16 @@
 import SwiftUI
 
+// The shareable recap, 360×640 points (1080×1920 when rendered at 3×).
 struct RecapCardView: View {
   let roll: Roll
   let photos: [UIImage]
   let peopleCount: Int
-  var template: RecapTemplate = .filmStrip
+  var template: RecapTemplate = .mosaic
 
   var body: some View {
     switch template {
+    case .mosaic:
+      MosaicCard(roll: roll, photos: photos, peopleCount: peopleCount)
     case .filmStrip:
       FilmStripCard(roll: roll, photos: photos, peopleCount: peopleCount)
     case .prints:
@@ -18,41 +21,89 @@ struct RecapCardView: View {
   }
 }
 
-// "TwentyFour •" — same on every template
-struct RecapWordmark: View {
+// Title, TF number, meta line and divider — the same on every template.
+struct RecapHeader: View {
+  let roll: Roll
+  let peopleCount: Int
+  var dark = false
+
+  private var subtle: Color { dark ? Theme.paper.opacity(0.55) : Theme.muted }
+
   var body: some View {
-    HStack(spacing: 6) {
-      Text("TwentyFour")
-        .font(.custom("ChalkboardSE-Bold", size: 22))
-      Circle()
-        .fill(Theme.accent)
-        .frame(width: 7, height: 7)
+    VStack(alignment: .leading, spacing: 10) {
+      HStack(alignment: .top) {
+        Text(roll.name)
+          .font(Theme.sans(30))
+          .textCase(.uppercase)
+          .lineLimit(2)
+          .minimumScaleFactor(0.7)
+          .lineSpacing(-4)
+        Spacer(minLength: 12)
+        Text(roll.recapNumber)
+          .metaStyle(7, color: subtle)
+          .padding(.top, 4)
+      }
+      HStack {
+        Text(roll.metaLine)
+        Spacer()
+        Text("\(roll.frameCount) frames · \(peopleCount) \(peopleCount == 1 ? "person" : "people")")
+      }
+      .metaStyle(7, color: subtle)
+      Rectangle()
+        .fill(dark ? Theme.paper.opacity(0.25) : Theme.ink)
+        .frame(height: 1)
     }
   }
 }
 
-// name, details, counts, tagline — same on every template
+// TWENTYFOUR · ● ONE CAMERA · EVERYONE'S NIGHT — the same on every template.
 struct RecapFooter: View {
-  let roll: Roll
-  let peopleCount: Int
-  let secondary: Color
+  var dark = false
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 4) {
-      Text(roll.name)
-        .font(.custom("Futura-CondensedExtraBold", size: 40))
+    HStack {
+      Text("TwentyFour")
+        .font(Theme.sans(10, .bold))
         .textCase(.uppercase)
-      Text(roll.details)
-        .font(.custom("DINCondensed-Bold", size: 16))
-        .foregroundStyle(secondary)
-      Text("\(roll.framesTaken) shots · \(peopleCount) friends")
-        .font(.custom("DINCondensed-Bold", size: 16))
-        .foregroundStyle(secondary)
-      Text("shot together on TwentyFour")
-        .font(.custom("Courier-Bold", size: 12))
-        .foregroundStyle(Theme.stamp)
-        .padding(.top, 8)
+        .tracking(0.5)
+      Spacer()
+      HStack(spacing: 5) {
+        Circle()
+          .fill(Theme.accent)
+          .frame(width: 5, height: 5)
+        Text("One camera · everyone's night")
+          .metaStyle(6.5, color: dark ? Theme.paper.opacity(0.55) : Theme.muted)
+      }
     }
+  }
+}
+
+// a photo cropped to fill its box, with an optional small frame number
+struct RecapPhoto: View {
+  let image: UIImage?
+  var number: Int? = nil
+
+  var body: some View {
+    Color.clear
+      .overlay {
+        if let image {
+          Image(uiImage: image)
+            .resizable()
+            .scaledToFill()
+        } else {
+          Theme.ink.opacity(0.06)
+        }
+      }
+      .clipped()
+      .overlay(alignment: .topLeading) {
+        if let number {
+          Text(String(format: "%02d", number))
+            .font(Theme.mono(6))
+            .foregroundStyle(.white)
+            .shadow(color: .black.opacity(0.5), radius: 1)
+            .padding(4)
+        }
+      }
   }
 }
 
@@ -62,5 +113,10 @@ extension Roll {
     let formatter = DateFormatter()
     formatter.dateFormat = "''yy MM dd"
     return formatter.string(from: startsAt ?? createdAt)
+  }
+
+  // a small catalog number for the card, like TF-A8F
+  var recapNumber: String {
+    "TF-" + inviteCode.prefix(3).uppercased()
   }
 }

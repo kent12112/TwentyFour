@@ -34,6 +34,19 @@ struct Roll: Codable, Identifiable {
   }
 }
 extension Roll {
+  // "Oct 01 · NYC" (shown uppercase with .metaStyle)
+  var metaLine: String {
+    let formatter = DateFormatter()
+    formatter.dateFormat = "MMM dd"
+    let date = formatter.string(from: startsAt ?? createdAt)
+    if let location, !location.isEmpty {
+      return "\(date) · \(location)"
+    }
+    return date
+  }
+
+  var isDeveloped: Bool { status == "developed" }
+
   var details: String {
     let date = (startsAt ?? createdAt).formatted(date: .abbreviated, time: .omitted)
     if let location = location, !location.isEmpty {
