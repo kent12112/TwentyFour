@@ -9,21 +9,9 @@ struct RollDetailView: View {
   @State private var photoURLs: [UUID: URL] = [:]
   @State private var names: [UUID: String] = [:]
   @State private var selectedFrame: Frame?
-  @State private var recapPhotos: [UIImage] = []
   @State private var showingRecap = false
 
-  private var current: Roll { latest ?? roll }
-  private var recapImage: Image? {
-    let renderer = ImageRenderer(
-      content: RecapCardView(
-        roll: current,
-        photos: recapPhotos,
-        peopleCount: names.count
-      ))
-    renderer.scale = 3
-    guard let uiImage = renderer.uiImage else { return nil }
-    return Image(uiImage: uiImage)
-  }
+  private var current: Roll { latest ?? roll } 
   let roll: Roll
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
@@ -180,7 +168,6 @@ struct RollDetailView: View {
         .value
       await loadPhotoURLs()
       await loadNames()
-      await loadRecapPhotos()
     } catch {
       print("Failed to reload roll:", error)
     }
@@ -212,20 +199,5 @@ struct RollDetailView: View {
       }
     } catch { print("Failed to load names:", error) }
   }
-
-  private func loadRecapPhotos() async {
-    var images: [UIImage] = []
-    for frame in frames.prefix(9) {
-      guard let url = photoURLs[frame.id] else { continue }
-      do {
-        let (data, _) = try await URLSession.shared.data(from: url)
-        if let image = UIImage(data: data) {
-          images.append(image)
-        }
-      } catch {
-        print("Recap photo \(frame.frameNumber) failed:", error)
-      }
-    }
-    recapPhotos = images
-  }
 }
+  

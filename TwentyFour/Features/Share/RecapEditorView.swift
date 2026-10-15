@@ -18,6 +18,18 @@ struct RecapEditorView: View {
   private var selectedImages: [UIImage] {
     selected.compactMap { images[$0] }
   }
+  private var renderedImage: Image? {
+    let renderer = ImageRenderer(
+      content: RecapCardView(
+        roll: roll,
+        photos: selectedImages,
+        peopleCount: peopleCount
+      )
+    )
+    renderer.scale = 3
+    guard let uiImage = renderer.uiImage else { return nil }
+    return Image(uiImage: uiImage)
+  }
 
   var body: some View {
     NavigationStack {
@@ -77,7 +89,16 @@ struct RecapEditorView: View {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") { dismiss() }
         }
+        ToolbarItem(placement: .confirmationAction) {
+          if !selected.isEmpty, let image = renderedImage {
+            ShareLink(item: image, preview: SharePreview(roll.name, image: image)) {
+              Text("Share")
+                .bold()
+            }
+          }
+        }
       }
+
     }
     .tint(Theme.ink)
     .task { await loadImages() }
