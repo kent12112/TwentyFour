@@ -1,5 +1,7 @@
 import Foundation
 
+struct Member: Codable { let profile: Profile}
+
 struct Roll: Codable, Identifiable {
   let id: UUID
   let name: String
@@ -13,6 +15,7 @@ struct Roll: Codable, Identifiable {
   let developedAt: Date?
   let createdAt: Date
   let inviteCode: String
+  let members: [Member]?
 
   enum CodingKeys: String, CodingKey {
     case id
@@ -27,5 +30,6 @@ struct Roll: Codable, Identifiable {
     case developedAt = "developed_at"
     case createdAt = "created_at"
     case inviteCode = "invite_code"
+    case members
   }
 }

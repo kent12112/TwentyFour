@@ -8,14 +8,30 @@ struct SignInView: View {
       Theme.paper.ignoresSafeArea()
       VStack(spacing: 16){
         Spacer()
+        Image("hero")
+          .resizable()
+          .scaledToFill()
+          .frame(width: 240, height: 170)
+          .clipped()
+          .overlay(alignment: .bottomTrailing) {
+            Text("'26 10 14")
+              .font(.system(size: 13, weight: .semibold, design: .monospaced))
+              .foregroundStyle(Color(red: 1, green: 0.55, blue: 0.15))
+              .padding(8)
+          }
+          .padding(8)
+          .background(.white)
+          .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
+          .rotationEffect(.degrees(-3))
+          .padding(.bottom, 24)
         HStack(spacing: 8) {
-          Text("TWENTYFOUR")
-            .font(.system(size: 40, weight: .black))
+          Text("TwentyFour")
+            .font(.custom("ChalkboardSE-Bold", size: 40))
           Circle()
             .fill(Theme.accent)
             .frame(width: 12, height: 12)
         }
-        Text("The group disposable camera.")
+        Text("The group disposable camera")
           .font(.system(size: 15, design: .monospaced))
 
         Spacer()

@@ -8,31 +8,64 @@ struct RollsListView: View {
   let model: AppModel
   var body: some View {
     NavigationStack {
-      List(rolls) { roll in
-        NavigationLink {
-          RollDetailView(roll: roll)
-        } label: {
-          HStack {
-            Text(roll.name)
-            Spacer()
-            Text(String(roll.framesTaken) + "/" + String(roll.frameCount))
+      VStack(spacing: 0) {
+        HStack {
+          HStack(spacing: 6){
+            Text("TwentyFour")
+              .font(.custom("ChalkboardSE-Bold", size: 26))
+            Circle()
+              .fill(Theme.accent)
+              .frame(width: 8, height: 8)
+          }
+          Spacer()
+          Menu {
+             Button("Sign Out", role: .destructive) {
+                Task {
+                  try? await SupabaseClient.shared.auth.signOut()
+                }
+              } 
+              } label: {
+                Image(systemName: "person.crop.circle")
+                  .font(.system(size: 26))
           }
         }
-      }
-      .task(id: model.rollsVersion) { await loadRolls() }
-      .navigationTitle("Your Rolls")
-      .toolbar {
-        Button("Sign Out") {
-          Task {
-            try? await SupabaseClient.shared.auth.signOut()
-          }
-        }
+        .padding(.horizontal)
         Button {
           showingNewRoll = true
         } label: {
-          Image(systemName: "plus")
+          NewRollCard()
         }
+        .buttonStyle(.plain)
+        .padding()
+        VStack(alignment: .leading, spacing: 4) {
+          Text("Your Rolls")
+            .font(.system(size: 22, weight: .bold, design: .rounded))
+          Text("Photos stay hidden until all 24 shots are taken.")
+            .font(.system(size: 13, design: .rounded))
+            .foregroundStyle(Theme.ink.opacity(0.6))
+        }
+        .foregroundStyle(Theme.ink)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal)
+        .padding(.bottom, 10)
+        List(rolls) { roll in
+          ZStack {
+            RollRow(roll: roll)
+            NavigationLink {
+              RollDetailView(roll: roll)
+            } label: {
+              EmptyView()
+            }
+            .opacity(0)
+          }
+          .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+          .listRowBackground(Theme.paper)
+        }
+        .listStyle(.plain)
+        .scrollContentBackground(.hidden)
       }
+      .background(Theme.paper)
+      .task(id: model.rollsVersion) { await loadRolls() }
       .sheet(isPresented: $showingNewRoll, onDismiss: {
         Task{
           await loadRolls() 
@@ -55,7 +88,7 @@ struct RollsListView: View {
     do {
       rolls = try await SupabaseClient.shared
         .from("rolls")
-        .select()
+        .select("*, members:roll_members(profile:profiles(id, display_name, color))")
         .order("created_at", ascending: false)
         .execute()
         .value
