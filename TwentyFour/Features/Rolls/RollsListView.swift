@@ -5,6 +5,7 @@ import UserNotifications
 struct RollsListView: View {
   @State private var rolls: [Roll] = []
   @State private var showingNewRoll = false
+  @State private var isLoading = true
   let model: AppModel
   var body: some View {
     NavigationStack {
@@ -30,6 +31,7 @@ struct RollsListView: View {
           }
         }
         .padding(.horizontal)
+        .foregroundStyle(Theme.ink)
         Button {
           showingNewRoll = true
         } label: {
@@ -48,23 +50,44 @@ struct RollsListView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal)
         .padding(.bottom, 10)
-        List(rolls) { roll in
-          ZStack {
-            RollRow(roll: roll)
-            NavigationLink {
-              RollDetailView(roll: roll)
-            } label: {
-              EmptyView()
-            }
-            .opacity(0)
+        if isLoading {
+          ProgressView()
+            .frame(maxHeight: .infinity)
+        } else if rolls.isEmpty {
+          VStack(spacing: 8) {
+            Image(systemName: "camera")
+              .font(.system(size: 36))
+            Text("No rolls yet")
+              .font(.system(size: 16, weight: .bold, design: .rounded))
+            Text("Create one above, or open an invite link from a friend.")
+              .font(.system(size: 13, design: .rounded))
+              .foregroundStyle(Theme.ink.opacity(0.6))
           }
-          .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
-          .listRowBackground(Theme.paper)
+          .multilineTextAlignment(.center)
+          .foregroundStyle(Theme.ink)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+          .padding(.horizontal, 32)
+        } else{
+          List(rolls) { roll in
+            ZStack {
+              RollRow(roll: roll)
+              NavigationLink {
+                RollDetailView(roll: roll)
+              } label: {
+                EmptyView()
+              }
+              .opacity(0)
+            }
+            .listRowInsets(EdgeInsets(top: 0, leading: 16, bottom: 0, trailing: 16))
+            .listRowBackground(Theme.paper)
+          }
+          .listStyle(.plain)
+          .scrollContentBackground(.hidden)
+          .refreshable { await loadRolls() }
         }
-        .listStyle(.plain)
-        .scrollContentBackground(.hidden)
       }
       .background(Theme.paper)
+      .toolbar(.hidden, for: .navigationBar)
       .task(id: model.rollsVersion) { await loadRolls() }
       .sheet(isPresented: $showingNewRoll, onDismiss: {
         Task{
@@ -83,6 +106,7 @@ struct RollsListView: View {
         }
       }
     }
+    .tint(Theme.ink)
   }
   private func loadRolls() async {
     do {
@@ -95,5 +119,6 @@ struct RollsListView: View {
     } catch {
       print("Failed to load rolls:", error)
     }
+    isLoading = false
   }
 }
