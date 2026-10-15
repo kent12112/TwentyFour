@@ -5,43 +5,100 @@ struct RecapCardView: View {
   let photos: [UIImage]
   let peopleCount: Int
 
+  private var rowStarts: [Int] {
+    Array(stride(from: 0, to: photos.count, by: 3))
+  }
+
   var body: some View {
-    VStack(alignment: .leading, spacing: 12) {
-      Text(roll.name.uppercased()).font(.system(size: 32, weight: .black))
+    VStack(alignment: .leading, spacing: 0) {
+      // header
+      HStack {
+        HStack(spacing: 6) {
+          Text("TwentyFour")
+            .font(.custom("ChalkboardSE-Bold", size: 22))
+          Circle()
+            .fill(Theme.accent)
+            .frame(width: 7, height: 7)
+        }
+        Spacer()
+        Text("\(roll.frameCount) EXP")
+          .font(.custom("DINCondensed-Bold", size: 15))
+          .foregroundStyle(Theme.stamp)
+      }
+      .padding(.bottom, 16)
 
-      Text((roll.startsAt ?? roll.createdAt).formatted(date: .abbreviated, time: .omitted))
-        .font(.system(size: 13, design: .monospaced))
-
-      Text("\(roll.frameCount) frames · \(peopleCount) people")
-        .font(.system(size: 13, design: .monospaced))
-
-      LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 6), count: 3), spacing: 6) {
-        ForEach(photos.indices, id: \.self) {
-          i in Image(uiImage: photos[i])
-            .resizable()
-            .scaledToFill()
-            .frame(minWidth: 0, maxWidth: .infinity)
-            .frame(height: 120)
-            .clipped()
+      // film strip
+      VStack(spacing: 0) {
+        ForEach(rowStarts, id: \.self) { start in
+          filmRow(start: start)
         }
       }
 
       Spacer()
 
-      HStack(spacing: 6) {
-        Text("TWENTYFOUR")
-          .font(.system(size: 16, weight: .bold))
-        Circle()
-          .fill(Theme.accent)
-          .frame(width: 8, height: 8)
+      // footer
+      VStack(alignment: .leading, spacing: 4) {
+        Text(roll.name)
+          .font(.custom("Futura-CondensedExtraBold", size: 40))
+          .textCase(.uppercase)
+        Text(roll.details)
+          .font(.custom("DINCondensed-Bold", size: 16))
+          .foregroundStyle(Theme.paper.opacity(0.6))
+        Text("\(roll.framesTaken) shots · \(peopleCount) friends")
+          .font(.custom("DINCondensed-Bold", size: 16))
+          .foregroundStyle(Theme.paper.opacity(0.6))
+        Text("shot together on TwentyFour")
+          .font(.custom("Courier-Bold", size: 12))
+          .foregroundStyle(Theme.stamp)
+          .padding(.top, 8)
       }
-      Text("A shared disposable camera")
-        .font(.system(size: 10, design: .monospaced))
     }
     .padding(24)
     .frame(width: 360, height: 640)
-    .background(Theme.paper)
-    .foregroundStyle(Theme.ink)
+    .background(Theme.film)
+    .foregroundStyle(Theme.paper)
+  }
+
+  private var sprockets: some View {
+    HStack(spacing: 0) {
+      ForEach(0..<14, id: \.self) { _ in
+        RoundedRectangle(cornerRadius: 1.5)
+          .fill(Theme.paper.opacity(0.85))
+          .frame(width: 8, height: 6)
+          .frame(maxWidth: .infinity)
+      }
+    }
+    .padding(.vertical, 6)
+  }
+
+  private func filmRow(start: Int) -> some View {
+    VStack(alignment: .leading, spacing: 4) {
+      sprockets
+      HStack(spacing: 4) {
+        ForEach(start..<start + 3, id: \.self) { i in
+          if i < photos.count {
+            Color.clear
+              .aspectRatio(1, contentMode: .fit)
+              .overlay {
+                Image(uiImage: photos[i])
+                  .resizable()
+                  .scaledToFill()
+              }
+              .clipped()
+          } else {
+            Color.clear
+              .aspectRatio(1, contentMode: .fit)
+          }
+        }
+      }
+      HStack(spacing: 4) {
+        ForEach(start..<start + 3, id: \.self) { i in
+          Text(i < photos.count ? String(format: "%02d ▸", i + 1) : "")
+            .font(.custom("DINCondensed-Bold", size: 12))
+            .foregroundStyle(Theme.stamp)
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+      }
+    }
   }
 }
-

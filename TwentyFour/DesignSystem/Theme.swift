@@ -5,6 +5,7 @@ enum Theme {
   static let ink = Color(red: 0x11 / 255, green: 0x11 / 255, blue: 0x11 / 255)
   static let accent = Color(red: 0xE5 / 255, green: 0x48 / 255, blue: 0x4D / 255)
   static let stamp = Color(red: 1, green: 0.55, blue: 0.15)
+  static let film = Color(red: 0.11, green: 0.10, blue: 0.09)
 
 
 }
