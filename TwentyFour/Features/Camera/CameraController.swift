@@ -6,8 +6,11 @@ final class CameraController {
   let session = AVCaptureSession()
   private let photoOutput = AVCapturePhotoOutput()
   private var captureDelegate: PhotoCaptureDelegate?
+  private var currentInput: AVCaptureDeviceInput?
   var isAuthorized = false
   var isFlashOn = true
+  var position: AVCaptureDevice.Position = .back
+  var isExposureLocked = false
 
   func start() async {
     isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
@@ -35,11 +38,50 @@ final class CameraController {
     }
   }
 
+  // switch between the back and front camera
+  func flip() {
+    let newPosition: AVCaptureDevice.Position = position == .back ? .front : .back
+    guard
+      let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: newPosition),
+      let newInput = try? AVCaptureDeviceInput(device: camera)
+    else { return }
+
+    session.beginConfiguration()
+    if let currentInput { session.removeInput(currentInput) }
+    if session.canAddInput(newInput) {
+      session.addInput(newInput)
+      currentInput = newInput
+      position = newPosition
+    } else if let currentInput {
+      session.addInput(currentInput)  // put the old camera back if the new one fails
+    }
+    session.commitConfiguration()
+    isExposureLocked = false
+  }
+
+  // AE lock: freeze the current brightness, or go back to automatic
+  func toggleExposureLock() {
+    guard let device = currentInput?.device else { return }
+    do {
+      try device.lockForConfiguration()
+      if isExposureLocked {
+        device.exposureMode = .continuousAutoExposure
+        isExposureLocked = false
+      } else if device.isExposureModeSupported(.locked) {
+        device.exposureMode = .locked
+        isExposureLocked = true
+      }
+      device.unlockForConfiguration()
+    } catch {
+      print("Exposure lock failed:", error)
+    }
+  }
+
   private func configure() {
     session.beginConfiguration()
     session.sessionPreset = .photo
     guard
-      let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: .back),
+      let camera = AVCaptureDevice.default(.builtInWideAngleCamera, for: .video, position: position),
       let input = try? AVCaptureDeviceInput(device: camera),
       session.canAddInput(input),
       session.canAddOutput(photoOutput)
@@ -49,6 +91,7 @@ final class CameraController {
     }
     session.addInput(input)
     session.addOutput(photoOutput)
+    currentInput = input
     session.commitConfiguration()
   }
 }
