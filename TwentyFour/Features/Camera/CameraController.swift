@@ -11,14 +11,14 @@ final class CameraController {
 
   func start() async {
     isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
-    guard isAuthorized else {return}
-    if session.inputs.isEmpty {configure()}
+    guard isAuthorized else { return }
+    if session.inputs.isEmpty { configure() }
     let session = self.session
-    Task.detached {session.startRunning()}
+    Task.detached { session.startRunning() }
   }
   func stop() {
     let session = self.session
-    Task.detached { session.stopRunning()}
+    Task.detached { session.stopRunning() }
   }
 
   func capturePhoto() async throws -> Data {
@@ -60,7 +60,9 @@ final class PhotoCaptureDelegate: NSObject, AVCapturePhotoCaptureDelegate {
     self.continuation = continuation
   }
 
-  func photoOutput(_ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?) {
+  func photoOutput(
+    _ output: AVCapturePhotoOutput, didFinishProcessingPhoto photo: AVCapturePhoto, error: Error?
+  ) {
     if let error {
       continuation.resume(throwing: error)
       return

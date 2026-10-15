@@ -9,7 +9,7 @@ struct NameView: View {
   }
 
   var body: some View {
-    ZStack{
+    ZStack {
       Theme.paper.ignoresSafeArea()
       VStack(alignment: .leading, spacing: 16) {
         Spacer()
@@ -28,19 +28,19 @@ struct NameView: View {
           .background(.white, in: RoundedRectangle(cornerRadius: 12))
         Spacer()
         Button {
-            Task {
-              await model.createProfile(displayName: trimmedName)
-            }
+          Task {
+            await model.createProfile(displayName: trimmedName)
+          }
         } label: {
-              Text("Continue")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-                .foregroundStyle(.white)
-                .frame(maxWidth: .infinity, minHeight: 50)
-                .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
-            }
-            .buttonStyle(.plain)
-            .disabled(trimmedName.isEmpty)
-            .opacity(trimmedName.isEmpty ? 0.4 : 1)
+          Text("Continue")
+            .font(.system(size: 17, weight: .bold, design: .rounded))
+            .foregroundStyle(.white)
+            .frame(maxWidth: .infinity, minHeight: 50)
+            .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+        .disabled(trimmedName.isEmpty)
+        .opacity(trimmedName.isEmpty ? 0.4 : 1)
       }
       .padding(24)
       .foregroundStyle(Theme.ink)

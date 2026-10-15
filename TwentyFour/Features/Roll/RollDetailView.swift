@@ -1,5 +1,5 @@
-import SwiftUI
 import Supabase
+import SwiftUI
 
 struct RollDetailView: View {
   @State private var showingInvite = false
@@ -10,14 +10,16 @@ struct RollDetailView: View {
   @State private var names: [UUID: String] = [:]
   @State private var selectedFrame: Frame?
   @State private var recapPhotos: [UIImage] = []
+  @State private var showingRecap = false
 
-  private var current: Roll { latest ?? roll}
+  private var current: Roll { latest ?? roll }
   private var recapImage: Image? {
-    let renderer = ImageRenderer(content: RecapCardView(
-      roll: current,
-      photos: recapPhotos,
-      peopleCount: names.count
-    ))
+    let renderer = ImageRenderer(
+      content: RecapCardView(
+        roll: current,
+        photos: recapPhotos,
+        peopleCount: names.count
+      ))
     renderer.scale = 3
     guard let uiImage = renderer.uiImage else { return nil }
     return Image(uiImage: uiImage)
@@ -25,49 +27,52 @@ struct RollDetailView: View {
   let roll: Roll
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-       VStack(alignment: .leading, spacing: 4) {
-            Text(current.name)
-              .font(.system(size: 28, weight: .bold, design: .rounded))
-            Text(current.details)
-              .font(.system(size: 13, design: .rounded))
-              .foregroundStyle(Theme.ink.opacity(0.6))
-            MemberAvatars(members: current.members ?? [])
-              .padding(.top, 4)
-          }
-          .padding([.horizontal, .top], 24)
+      VStack(alignment: .leading, spacing: 4) {
+        Text(current.name)
+          .font(.system(size: 28, weight: .bold, design: .rounded))
+        Text(current.details)
+          .font(.system(size: 13, design: .rounded))
+          .foregroundStyle(Theme.ink.opacity(0.6))
+        MemberAvatars(members: current.members ?? [])
+          .padding(.top, 4)
+      }
+      .padding([.horizontal, .top], 24)
       if current.status == "developed" {
         ScrollView {
-          LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2) {
+          LazyVGrid(
+            columns: Array(repeating: GridItem(.flexible(), spacing: 2), count: 3), spacing: 2
+          ) {
             ForEach(frames) { frame in
-            Color.clear
-              .aspectRatio(1, contentMode: .fit)
-              .overlay {
-                 AsyncImage(url: photoURLs[frame.id]) {
-                  image in image.resizable().scaledToFill()
-                } placeholder: {
-                  Theme.ink.opacity(0.08)
+              Color.clear
+                .aspectRatio(1, contentMode: .fit)
+                .overlay {
+                  AsyncImage(url: photoURLs[frame.id]) {
+                    image in
+                    image.resizable().scaledToFill()
+                  } placeholder: {
+                    Theme.ink.opacity(0.08)
+                  }
                 }
-              }
-              .clipped()
-              .contentShape(Rectangle())
-              .onTapGesture {
-                selectedFrame = frame
-              }
-            } 
+                .clipped()
+                .contentShape(Rectangle())
+                .onTapGesture {
+                  selectedFrame = frame
+                }
+            }
           }
           .padding()
         }
-      }else {
+      } else {
         VStack(alignment: .leading, spacing: 0) {
           Spacer()
           VStack(spacing: 4) {
             Text("\(current.framesTaken)")
-               .font(.system(size: 96, weight: .bold, design: .monospaced))
+              .font(.system(size: 96, weight: .bold, design: .monospaced))
             Text("of \(current.frameCount) shots")
               .font(.system(size: 13, design: .rounded))
               .foregroundStyle(Theme.ink.opacity(0.6))
             HStack(spacing: 3) {
-              ForEach(0..<current.frameCount, id: \.self) { i in 
+              ForEach(0..<current.frameCount, id: \.self) { i in
                 RoundedRectangle(cornerRadius: 2)
                   .fill(i < current.framesTaken ? Theme.ink : Theme.ink.opacity(0.15))
                   .frame(height: 24)
@@ -79,12 +84,12 @@ struct RollDetailView: View {
           Spacer()
           VStack(spacing: 12) {
             Text("Develops when the roll is full.")
-            .font(.system(size: 13, design: .rounded))
-            .foregroundStyle(Theme.ink.opacity(0.6))
-            .padding(.bottom, 4)
+              .font(.system(size: 13, design: .rounded))
+              .foregroundStyle(Theme.ink.opacity(0.6))
+              .padding(.bottom, 4)
             Button {
               showingCamera = true
-            } label: { 
+            } label: {
               Label("Shoot", systemImage: "camera.fill")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .foregroundStyle(.white)
@@ -94,7 +99,7 @@ struct RollDetailView: View {
             Button {
               showingInvite = true
             } label: {
-                Text("Invite friends")
+              Text("Invite friends")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
                 .frame(maxWidth: .infinity, minHeight: 50)
                 .overlay(
@@ -114,21 +119,34 @@ struct RollDetailView: View {
     .navigationBarTitleDisplayMode(.inline)
     .toolbar {
       ToolbarItem(placement: .topBarTrailing) {
-        if current.status == "developed", !recapPhotos.isEmpty, let recapImage {
-          ShareLink(item: recapImage, preview: SharePreview(current.name, image: recapImage)) {
+        if current.status == "developed" {
+          Button {
+            showingRecap = true
+          } label: {
             Image(systemName: "square.and.arrow.up")
           }
         }
       }
     }
     .task { await reload() }
-    .sheet(isPresented: $showingInvite){
-        InviteView(roll: current)
-          .presentationDetents([.medium, .large])
-      }  
-    .fullScreenCover(isPresented: $showingCamera, onDismiss: {
-      Task { await reload() }
-    }) {
+    .sheet(isPresented: $showingInvite) {
+      InviteView(roll: current)
+        .presentationDetents([.medium, .large])
+    }
+    .sheet(isPresented: $showingRecap) {
+      RecapEditorView(
+        roll: current,
+        frames: frames,
+        photoURLs: photoURLs,
+        peopleCount: names.count
+      )
+    }
+    .fullScreenCover(
+      isPresented: $showingCamera,
+      onDismiss: {
+        Task { await reload() }
+      }
+    ) {
       CameraView(roll: current)
     }
     .fullScreenCover(item: $selectedFrame) {
@@ -181,7 +199,7 @@ struct RollDetailView: View {
     }
   }
   private func loadNames() async {
-    let ids = Array(Set(frames.compactMap { $0.photographerId}))
+    let ids = Array(Set(frames.compactMap { $0.photographerId }))
     do {
       let profiles: [Profile] = try await SupabaseClient.shared
         .from("profiles")
@@ -192,13 +210,13 @@ struct RollDetailView: View {
       for profile in profiles {
         names[profile.id] = profile.displayName
       }
-    } catch {print("Failed to load names:", error)}
+    } catch { print("Failed to load names:", error) }
   }
 
   private func loadRecapPhotos() async {
     var images: [UIImage] = []
     for frame in frames.prefix(9) {
-      guard let url = photoURLs[frame.id] else {continue}
+      guard let url = photoURLs[frame.id] else { continue }
       do {
         let (data, _) = try await URLSession.shared.data(from: url)
         if let image = UIImage(data: data) {

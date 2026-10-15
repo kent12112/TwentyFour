@@ -1,15 +1,15 @@
-import SwiftUI
 import Supabase
+import SwiftUI
 
 struct RollRow: View {
   let roll: Roll
   @State private var coverURL: URL?
 
-  private var isDeveloped: Bool { roll.status == "developed"}
+  private var isDeveloped: Bool { roll.status == "developed" }
   private var members: [Member] { roll.members ?? [] }
 
   private func loadCover() async {
-    guard isDeveloped else {return}
+    guard isDeveloped else { return }
 
     do {
       let firstFrames: [Frame] = try await SupabaseClient.shared
@@ -71,12 +71,15 @@ struct RollRow: View {
         }
         .overlay(Color.black.opacity(0.3))
         .overlay(
-          LinearGradient(colors: [.black.opacity(0.65), .black.opacity(0.15)],
+          LinearGradient(
+            colors: [.black.opacity(0.65), .black.opacity(0.15)],
             startPoint: .leading, endPoint: .trailing)
         )
-      } else { Color.white }
+      } else {
+        Color.white
+      }
     }
     .clipShape(RoundedRectangle(cornerRadius: 16))
-    .task {await loadCover()}
+    .task { await loadCover() }
   }
 }

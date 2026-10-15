@@ -10,7 +10,7 @@ final class UploadQueue {
   private(set) var items: [PendingUpload] = []
 
   private let folder: URL
-  private var queueFile: URL { folder.appendingPathComponent("queue.json")}
+  private var queueFile: URL { folder.appendingPathComponent("queue.json") }
   private var isProcessing = false
 
   private init() {
@@ -21,12 +21,12 @@ final class UploadQueue {
   }
 
   private func load() {
-    guard let data = try? Data(contentsOf: queueFile ) else { return }
+    guard let data = try? Data(contentsOf: queueFile) else { return }
     items = (try? JSONDecoder().decode([PendingUpload].self, from: data)) ?? []
   }
 
   private func save() {
-    guard let data = try? JSONEncoder().encode(items) else {return}
+    guard let data = try? JSONEncoder().encode(items) else { return }
     try? data.write(to: queueFile)
   }
 
@@ -45,10 +45,10 @@ final class UploadQueue {
   }
 
   func processAll() async {
-    guard !isProcessing else {return}
+    guard !isProcessing else { return }
     isProcessing = true
     defer { isProcessing = false }
-    
+
     for upload in items {
       do {
         let data = try Data(contentsOf: folder.appendingPathComponent(upload.localFileName))
@@ -56,20 +56,23 @@ final class UploadQueue {
           try await SupabaseClient.shared.storage
             .from("frames")
             .upload(upload.storagePath, data: data, options: FileOptions(contentType: "image/jpeg"))
-          } catch let error as StorageError where error.statusCode == "409" {}
+        } catch let error as StorageError where error.statusCode == "409" {}
         do {
           let _: Roll = try await SupabaseClient.shared
-            .rpc("finalize_frame", params: FinalizeParams(p_frame_id: upload.frameId, p_storage_path: upload.storagePath))
+            .rpc(
+              "finalize_frame",
+              params: FinalizeParams(p_frame_id: upload.frameId, p_storage_path: upload.storagePath)
+            )
             .execute()
             .value
-          } catch let error as PostgrestError where error.message == "Frame is not reserved" {}
+        } catch let error as PostgrestError where error.message == "Frame is not reserved" {}
         remove(upload)
       } catch {
         print("Upload of frame \(upload.frameNumber) failed, will retry:", error)
       }
     }
   }
-  
+
   private func remove(_ upload: PendingUpload) {
     try? FileManager.default.removeItem(at: folder.appendingPathComponent(upload.localFileName))
     items.removeAll { $0.frameId == upload.frameId }

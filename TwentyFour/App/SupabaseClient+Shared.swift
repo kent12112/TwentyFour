@@ -10,6 +10,8 @@ extension SupabaseClient {
     else {
       fatalError("Supabase URL or Key not found in Info.plist")
     }
-    return SupabaseClient(supabaseURL: url, supabaseKey: key, options: SupabaseClientOptions(auth: .init(emitLocalSessionAsInitialSession: true)))
+    return SupabaseClient(
+      supabaseURL: url, supabaseKey: key,
+      options: SupabaseClientOptions(auth: .init(emitLocalSessionAsInitialSession: true)))
   }()
 }

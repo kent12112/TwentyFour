@@ -6,5 +6,5 @@ struct PendingUpload: Codable, Identifiable {
   let frameNumber: Int
   let storagePath: String
   let localFileName: String
-  var id: UUID {frameId}
+  var id: UUID { frameId }
 }

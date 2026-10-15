@@ -21,9 +21,11 @@ struct FrameViewer: View {
 
       TabView(selection: $currentID) {
         ForEach(frames) {
-          frame in ZStack(alignment: .bottom) {
+          frame in
+          ZStack(alignment: .bottom) {
             AsyncImage(url: photoURLs[frame.id]) {
-              image in image.resizable().scaledToFit()
+              image in
+              image.resizable().scaledToFit()
             } placeholder: {
               ProgressView()
                 .tint(.white)
@@ -33,10 +35,10 @@ struct FrameViewer: View {
               Text(names[frame.photographerId ?? UUID()] ?? "Unknown")
                 .font(.system(size: 17, weight: .bold, design: .rounded))
               Text(frame.takenAt.formatted(date: .abbreviated, time: .shortened))
-                .font(.system(size: 13, design: .rounded)) 
+                .font(.system(size: 13, design: .rounded))
                 .foregroundStyle(.white.opacity(0.7))
               Text("\(frame.frameNumber) / \(frames.count)")
-                .font(.system(size: 13, weight: .semibold, design: .monospaced)) 
+                .font(.system(size: 13, weight: .semibold, design: .monospaced))
                 .foregroundStyle(Theme.stamp)
             }
             .foregroundStyle(.white)
@@ -52,14 +54,16 @@ struct FrameViewer: View {
           Task { await saveCurrent() }
         } label: {
           Image(systemName: savedIDs.contains(currentID) ? "checkmark" : "arrow.down.to.line")
-            .font(.title2)                                 
-            .foregroundStyle(.white)                       
-            .frame(width: 44, height: 44)                  
-            .contentShape(Rectangle()) 
+            .font(.title2)
+            .foregroundStyle(.white)
+            .frame(width: 44, height: 44)
+            .contentShape(Rectangle())
         }
         .disabled(savedIDs.contains(currentID))
 
-        Button { dismiss() } label: {                      // ← the close button, back in
+        Button {
+          dismiss()
+        } label: {  // ← the close button, back in
           Image(systemName: "xmark")
             .font(.title2)
             .foregroundStyle(.white)
@@ -72,7 +76,7 @@ struct FrameViewer: View {
   }
 
   private func saveCurrent() async {
-    guard let url = photoURLs[currentID] else {return}
+    guard let url = photoURLs[currentID] else { return }
     do {
       let (data, _) = try await URLSession.shared.data(from: url)
       guard let image = UIImage(data: data) else { return }

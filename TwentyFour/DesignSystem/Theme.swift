@@ -7,5 +7,4 @@ enum Theme {
   static let stamp = Color(red: 1, green: 0.55, blue: 0.15)
   static let film = Color(red: 0.11, green: 0.10, blue: 0.09)
 
-
 }

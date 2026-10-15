@@ -1,6 +1,5 @@
 import Foundation
 
-
 struct Profile: Codable {
   let id: UUID
   let displayName: String

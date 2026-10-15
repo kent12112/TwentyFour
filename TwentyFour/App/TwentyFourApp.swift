@@ -1,5 +1,5 @@
-import SwiftUI
 import Supabase
+import SwiftUI
 
 @main
 struct TwentyFourApp: App {
@@ -8,14 +8,14 @@ struct TwentyFourApp: App {
   @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
   var body: some Scene {
     WindowGroup {
-      Group  {
+      Group {
         if model.isLoading {
           ProgressView()
         } else if model.session == nil {
           SignInView()
         } else if model.profile == nil {
           NameView(model: model)
-        }else {
+        } else {
           RollsListView(model: model)
         }
       }
@@ -23,12 +23,12 @@ struct TwentyFourApp: App {
         await model.start()
       }
       .onChange(of: scenePhase) { _, newPhase in
-      if newPhase == .active {
-        Task { await UploadQueue.shared.processAll() }
-      }
+        if newPhase == .active {
+          Task { await UploadQueue.shared.processAll() }
+        }
       }
       .onOpenURL {
-        url in Task { await model.handleURL(url)}
+        url in Task { await model.handleURL(url) }
       }
     }
   }

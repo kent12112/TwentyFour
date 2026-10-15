@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreImage.CIFilterBuiltins
+import SwiftUI
 
 struct InviteView: View {
   let roll: Roll
@@ -53,8 +53,8 @@ struct InviteView: View {
   private func qrImage(from text: String) -> UIImage? {
     let filter = CIFilter.qrCodeGenerator()
     filter.message = Data(text.utf8)
-    guard let output = filter.outputImage else {return nil}
-    guard let cgImage = CIContext().createCGImage(output, from: output.extent) else {return nil}
+    guard let output = filter.outputImage else { return nil }
+    guard let cgImage = CIContext().createCGImage(output, from: output.extent) else { return nil }
     return UIImage(cgImage: cgImage)
   }
 }

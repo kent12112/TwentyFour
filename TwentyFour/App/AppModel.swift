@@ -46,7 +46,7 @@ final class AppModel {
 
   func createProfile(displayName: String) async {
     //session is optional because it needs to work when user is signed out
-    guard let userId = session?.user.id else {return }
+    guard let userId = session?.user.id else { return }
 
     let newProfile = Profile(id: userId, displayName: displayName, color: "#E5484D")
 
@@ -62,12 +62,14 @@ final class AppModel {
     }
   }
   func handleURL(_ url: URL) async {
-    guard url.scheme == "twentyfour", url.host == "join" else {return}
-    guard let rollId = UUID(uuidString: url.lastPathComponent) else {return}
-    guard let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
-      .queryItems?
-      .first(where: {$0.name == "code"})?
-      .value else {return}
+    guard url.scheme == "twentyfour", url.host == "join" else { return }
+    guard let rollId = UUID(uuidString: url.lastPathComponent) else { return }
+    guard
+      let code = URLComponents(url: url, resolvingAgainstBaseURL: false)?
+        .queryItems?
+        .first(where: { $0.name == "code" })?
+        .value
+    else { return }
     if profile == nil {
       pendingInvite = PendingInvite(rollId: rollId, code: code)
       return
@@ -88,7 +90,7 @@ final class AppModel {
   }
 
   func joinPendingInvite() async {
-    guard profile != nil, let invite = pendingInvite else {return}
+    guard profile != nil, let invite = pendingInvite else { return }
     pendingInvite = nil
     await joinRoll(rollId: invite.rollId, code: invite.code)
   }

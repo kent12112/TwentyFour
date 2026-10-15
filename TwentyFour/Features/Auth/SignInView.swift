@@ -1,12 +1,12 @@
-import SwiftUI
 import AuthenticationServices
 import Supabase
+import SwiftUI
 
 struct SignInView: View {
   var body: some View {
     ZStack {
       Theme.paper.ignoresSafeArea()
-      VStack(spacing: 16){
+      VStack(spacing: 16) {
         Spacer()
         Image("hero")
           .resizable()
@@ -36,33 +36,35 @@ struct SignInView: View {
 
         Spacer()
         SignInWithAppleButton(.signIn) {
-          request in request.requestedScopes = [.fullName]
+          request in
+          request.requestedScopes = [.fullName]
         } onCompletion: { result in
           switch result {
-            case .success(let authorization):
-              guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
-                print("Invalid state: A non-Apple ID credential was received.")
-                return
-              }
-              guard 
-                let tokenData = credential.identityToken,
-                let idToken = String(data: tokenData, encoding: .utf8)
-              else {
-                print("No identity Token")
-                return
-              }
-              Task {
-                do {
-                  let session = try await SupabaseClient.shared.auth.signInWithIdToken(
-                    credentials: .init(provider: .apple, idToken: idToken)
-                    )
-                    print("Signed in as", session.user.id)
+          case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential
+            else {
+              print("Invalid state: A non-Apple ID credential was received.")
+              return
+            }
+            guard
+              let tokenData = credential.identityToken,
+              let idToken = String(data: tokenData, encoding: .utf8)
+            else {
+              print("No identity Token")
+              return
+            }
+            Task {
+              do {
+                let session = try await SupabaseClient.shared.auth.signInWithIdToken(
+                  credentials: .init(provider: .apple, idToken: idToken)
+                )
+                print("Signed in as", session.user.id)
               } catch {
                 print("Supabase sign-in failed:", error)
               }
-              } 
-            case .failure(let error):
-              print("Apple sign-in failed:", error)
+            }
+          case .failure(let error):
+            print("Apple sign-in failed:", error)
           }
         }
         .signInWithAppleButtonStyle(.black)
@@ -71,8 +73,8 @@ struct SignInView: View {
           .font(.system(size: 10, design: .monospaced))
           .foregroundStyle(.secondary)
       }
-       .padding(24)
-       .foregroundStyle(Theme.ink)
+      .padding(24)
+      .foregroundStyle(Theme.ink)
     }
   }
 }

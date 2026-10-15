@@ -11,7 +11,7 @@ struct RollsListView: View {
     NavigationStack {
       VStack(spacing: 0) {
         HStack {
-          HStack(spacing: 6){
+          HStack(spacing: 6) {
             Text("TwentyFour")
               .font(.custom("ChalkboardSE-Bold", size: 26))
             Circle()
@@ -20,14 +20,14 @@ struct RollsListView: View {
           }
           Spacer()
           Menu {
-             Button("Sign Out", role: .destructive) {
-                Task {
-                  try? await SupabaseClient.shared.auth.signOut()
-                }
-              } 
-              } label: {
-                Image(systemName: "person.crop.circle")
-                  .font(.system(size: 26))
+            Button("Sign Out", role: .destructive) {
+              Task {
+                try? await SupabaseClient.shared.auth.signOut()
+              }
+            }
+          } label: {
+            Image(systemName: "person.crop.circle")
+              .font(.system(size: 26))
           }
         }
         .padding(.horizontal)
@@ -67,7 +67,7 @@ struct RollsListView: View {
           .foregroundStyle(Theme.ink)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .padding(.horizontal, 32)
-        } else{
+        } else {
           List(rolls) { roll in
             ZStack {
               RollRow(roll: roll)
@@ -89,11 +89,14 @@ struct RollsListView: View {
       .background(Theme.paper)
       .toolbar(.hidden, for: .navigationBar)
       .task(id: model.rollsVersion) { await loadRolls() }
-      .sheet(isPresented: $showingNewRoll, onDismiss: {
-        Task{
-          await loadRolls() 
+      .sheet(
+        isPresented: $showingNewRoll,
+        onDismiss: {
+          Task {
+            await loadRolls()
+          }
         }
-      }) {NewRollView()}
+      ) { NewRollView() }
       .task {
         do {
           let granted = try await UNUserNotificationCenter.current()

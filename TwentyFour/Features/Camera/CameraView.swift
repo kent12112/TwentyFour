@@ -1,5 +1,5 @@
-import SwiftUI
 import Supabase
+import SwiftUI
 
 struct CameraView: View {
   let roll: Roll
@@ -17,19 +17,25 @@ struct CameraView: View {
         HStack {
           Text(roll.name).font(.headline)
           Spacer()
-          Button{ camera.isFlashOn.toggle() } label: {
+          Button {
+            camera.isFlashOn.toggle()
+          } label: {
             Image(systemName: camera.isFlashOn ? "bolt.fill" : "bolt.slash")
           }
-          Button { dismiss()} label: {
+          Button {
+            dismiss()
+          } label: {
             Image(systemName: "xmark")
               .font(.title2)
               .frame(width: 44, height: 44)
               .contentShape(Rectangle())
-            }
+          }
         }
         Spacer()
         Text("\(framesTaken) / \(roll.frameCount)")
-        Button { Task { await shoot() } } label: {
+        Button {
+          Task { await shoot() }
+        } label: {
           Circle().fill(.white).frame(width: 72, height: 72)
         }
         .disabled(isShooting)
@@ -41,9 +47,10 @@ struct CameraView: View {
       framesTaken = roll.framesTaken
       await camera.start()
       await listenForCounter()
-      }
+    }
     .onDisappear {
-      camera.stop()}
+      camera.stop()
+    }
   }
 
   private func shoot() async {
@@ -61,7 +68,7 @@ struct CameraView: View {
       try UploadQueue.shared.add(frame: frame, storagePath: path, data: processed)
       framesTaken = frame.frameNumber
 
-      Task { await UploadQueue.shared.processAll()}
+      Task { await UploadQueue.shared.processAll() }
       print("Shot frmae", frame.frameNumber, "-> queued for upload")
     } catch {
       print("Shoot failed:", error)
