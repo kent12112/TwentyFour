@@ -40,12 +40,6 @@ struct PrintsCard: View {
     VStack(alignment: .leading, spacing: 5) {
       RecapPhoto(image: image)
         .frame(width: 118, height: 118)
-        .overlay(alignment: .bottomTrailing) {
-          Text(roll.stampText)
-            .font(Theme.mono(6))
-            .foregroundStyle(Theme.stamp)
-            .padding(4)
-        }
       Text(String(format: "%02d / %d", number, roll.frameCount))
         .font(Theme.mono(6))
         .foregroundStyle(Theme.muted)

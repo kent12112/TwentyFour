@@ -16,12 +16,6 @@ struct HeroCard: View {
         VStack(alignment: .leading, spacing: 8) {
           RecapPhoto(image: hero)
             .aspectRatio(shape(of: hero), contentMode: .fit)
-            .overlay(alignment: .bottomTrailing) {
-              Text(roll.stampText)
-                .font(Theme.mono(9))
-                .foregroundStyle(Theme.stamp)
-                .padding(8)
-            }
           Text(String(format: "01 / %d", roll.frameCount))
             .font(Theme.mono(7))
             .foregroundStyle(Theme.muted)

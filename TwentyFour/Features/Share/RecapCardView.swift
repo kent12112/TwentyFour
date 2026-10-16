@@ -108,13 +108,6 @@ struct RecapPhoto: View {
 }
 
 extension Roll {
-  // the orange date stamp, like '26 10 14
-  var stampText: String {
-    let formatter = DateFormatter()
-    formatter.dateFormat = "''yy MM dd"
-    return formatter.string(from: startsAt ?? createdAt)
-  }
-
   // a small catalog number for the card, like TF-A8F
   var recapNumber: String {
     "TF-" + inviteCode.prefix(3).uppercased()

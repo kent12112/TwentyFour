@@ -21,12 +21,12 @@ enum FilmProcessor {
     let warm = CIFilter.temperatureAndTint()
     warm.inputImage = resize.outputImage
     warm.neutral = CIVector(x: 6500, y: 0)
-    warm.targetNeutral = CIVector(x: 5200, y: 10)
+    warm.targetNeutral = CIVector(x: 4600, y: 10)
 
     let color = CIFilter.colorControls()
     color.inputImage = warm.outputImage
     color.contrast = 0.9
-    color.saturation = 0.9
+    color.saturation = 0.8
 
     let vignette = CIFilter.vignette()
     vignette.inputImage = color.outputImage
