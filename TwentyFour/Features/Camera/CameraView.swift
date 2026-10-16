@@ -34,7 +34,7 @@ struct CameraView: View {
         topBar
         Spacer()
         Text("\(framesTaken)  /  \(roll.frameCount)")
-          .font(.system(size: 13, weight: .medium, design: .monospaced))
+          .font(Theme.mono(13, .medium))
           .padding(.bottom, 18)
         controls
       }
@@ -62,7 +62,7 @@ struct CameraView: View {
       }
       Spacer()
       Text(roll.name)
-        .font(.system(size: 11, weight: .medium, design: .monospaced))
+        .font(Theme.mono(11, .medium))
         .textCase(.uppercase)
         .tracking(1.5)
         .lineLimit(1)
@@ -83,7 +83,7 @@ struct CameraView: View {
     HStack {
       roundButton(active: camera.isExposureLocked) {
         Text("AE")
-          .font(.system(size: 11, weight: .semibold, design: .monospaced))
+          .font(Theme.mono(11, .bold))
       } action: {
         camera.toggleExposureLock()
       }

@@ -31,15 +31,14 @@ struct FrameViewer: View {
                 .tint(.white)
             }
 
-            VStack(spacing: 2) {
-              Text(names[frame.photographerId ?? UUID()] ?? "Unknown")
-                .font(.system(size: 17, weight: .bold, design: .rounded))
-              Text(frame.takenAt.formatted(date: .abbreviated, time: .shortened))
-                .font(.system(size: 13, design: .rounded))
-                .foregroundStyle(.white.opacity(0.7))
-              Text("\(frame.frameNumber) / \(frames.count)")
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+            VStack(spacing: 6) {
+              Text(String(format: "%02d / %d", frame.frameNumber, frames.count))
+                .font(Theme.mono(11, .medium))
                 .foregroundStyle(Theme.stamp)
+              Text(names[frame.photographerId ?? UUID()] ?? "Unknown")
+                .font(Theme.sans(17, .medium))
+              Text(frame.takenAt.formatted(date: .abbreviated, time: .shortened))
+                .metaStyle(9, color: .white.opacity(0.6))
             }
             .foregroundStyle(.white)
             .padding(.bottom, 40)
@@ -54,7 +53,7 @@ struct FrameViewer: View {
           Task { await saveCurrent() }
         } label: {
           Image(systemName: savedIDs.contains(currentID) ? "checkmark" : "arrow.down.to.line")
-            .font(.title2)
+            .font(.system(size: 18, weight: .light))
             .foregroundStyle(.white)
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())
@@ -63,9 +62,9 @@ struct FrameViewer: View {
 
         Button {
           dismiss()
-        } label: {  // ← the close button, back in
+        } label: {
           Image(systemName: "xmark")
-            .font(.title2)
+            .font(.system(size: 18, weight: .light))
             .foregroundStyle(.white)
             .frame(width: 44, height: 44)
             .contentShape(Rectangle())

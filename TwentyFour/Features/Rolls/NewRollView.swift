@@ -21,26 +21,29 @@ struct NewRollView: View {
         VStack(alignment: .leading, spacing: 16) {
           VStack(alignment: .leading, spacing: 4) {
             Text("New roll")
-              .font(.system(size: 28, weight: .bold, design: .rounded))
-            Text("24 shots. Develops when full.")
-              .font(.system(size: 13, design: .rounded))
-              .foregroundStyle(Theme.ink.opacity(0.6))
+              .font(Theme.sans(30))
+            Text("24 frames. Develops when the roll is full.")
+              .font(Theme.sans(14))
+              .foregroundStyle(Theme.muted)
           }
+          .padding(.bottom, 12)
           VStack(alignment: .leading, spacing: 6) {
-            Text("NAME")
-              .font(.system(size: 11, weight: .semibold, design: .monospaced))
-              .foregroundStyle(Theme.ink.opacity(0.6))
+            Text("Name")
+              .metaStyle(9)
             TextField("Kento's birthday", text: $name)
-              .padding()
-              .background(.white, in: RoundedRectangle(cornerRadius: 12))
+              .font(Theme.sans(17))
+              .padding(16)
+              .background(.white)
+              .overlay(Rectangle().stroke(Theme.line, lineWidth: 1))
           }
           VStack(alignment: .leading, spacing: 6) {
-            Text("LOCATION (optional)")
-              .font(.system(size: 11, weight: .semibold, design: .monospaced))
-              .foregroundStyle(Theme.ink.opacity(0.6))
+            Text("Location (optional)")
+              .metaStyle(9)
             TextField("Shibuya", text: $location)
-              .padding()
-              .background(.white, in: RoundedRectangle(cornerRadius: 12))
+              .font(Theme.sans(17))
+              .padding(16)
+              .background(.white)
+              .overlay(Rectangle().stroke(Theme.line, lineWidth: 1))
           }
           Spacer()
 
@@ -68,10 +71,10 @@ struct NewRollView: View {
                 Text("Create roll")
               }
             }
-            .font(.system(size: 17, weight: .bold, design: .rounded))
+            .font(Theme.sans(15, .medium))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Theme.ink)
           }
           .buttonStyle(.plain)
           .disabled(trimmedName.isEmpty || isCreating)
@@ -80,12 +83,22 @@ struct NewRollView: View {
         .padding(24)
         .foregroundStyle(Theme.ink)
       }
+      .navigationBarTitleDisplayMode(.inline)
+      .toolbarBackground(Theme.paper, for: .navigationBar)
       .toolbar {
         ToolbarItem(placement: .cancellationAction) {
           Button("Cancel") {
             dismiss()
           }
+          .font(Theme.sans(15))
+          .foregroundStyle(Theme.muted)
           .disabled(isCreating)
+        }
+        ToolbarItem(placement: .principal) {
+          Text("TwentyFour")
+            .font(Theme.sans(13, .bold))
+            .textCase(.uppercase)
+            .tracking(0.5)
         }
       }
     }

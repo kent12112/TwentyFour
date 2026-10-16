@@ -6,35 +6,43 @@ struct SignInView: View {
   var body: some View {
     ZStack {
       Theme.paper.ignoresSafeArea()
-      VStack(spacing: 16) {
+      VStack(alignment: .leading, spacing: 0) {
+        Text("TwentyFour")
+          .font(Theme.sans(17, .bold))
+          .textCase(.uppercase)
+          .tracking(0.5)
+          .padding(.top, 20)
+
         Spacer()
+
         Image("hero")
           .resizable()
           .scaledToFill()
-          .frame(width: 240, height: 170)
+          .frame(width: 250, height: 180)
           .clipped()
           .overlay(alignment: .bottomTrailing) {
             Text("'26 10 14")
-              .font(.system(size: 13, weight: .semibold, design: .monospaced))
+              .font(Theme.mono(11, .medium))
               .foregroundStyle(Theme.stamp)
               .padding(8)
           }
           .padding(8)
+          .padding(.bottom, 16)
           .background(.white)
           .shadow(color: .black.opacity(0.15), radius: 8, y: 4)
           .rotationEffect(.degrees(-3))
-          .padding(.bottom, 24)
-        HStack(spacing: 8) {
-          Text("TwentyFour")
-            .font(.custom("ChalkboardSE-Bold", size: 40))
-          Circle()
-            .fill(Theme.accent)
-            .frame(width: 12, height: 12)
+          .frame(maxWidth: .infinity)
+
+        VStack(alignment: .leading, spacing: 12) {
+          Text("One camera.\nEveryone's night.")
+            .font(Theme.sans(32))
+          Text("The group disposable camera")
+            .metaStyle(10)
         }
-        Text("The group disposable camera")
-          .font(.system(size: 15, design: .monospaced))
+        .padding(.top, 48)
 
         Spacer()
+
         SignInWithAppleButton(.signIn) {
           request in
           request.requestedScopes = [.fullName]
@@ -68,10 +76,11 @@ struct SignInView: View {
           }
         }
         .signInWithAppleButtonStyle(.black)
-        .frame(height: 50)
+        .frame(height: 52)
         Text("24 shots · no retakes · develops when the roll is full")
-          .font(.system(size: 10, design: .monospaced))
-          .foregroundStyle(.secondary)
+          .metaStyle(8)
+          .frame(maxWidth: .infinity)
+          .padding(.top, 14)
       }
       .padding(24)
       .foregroundStyle(Theme.ink)

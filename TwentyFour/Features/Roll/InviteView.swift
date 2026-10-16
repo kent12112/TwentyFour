@@ -13,10 +13,9 @@ struct InviteView: View {
       VStack(alignment: .leading, spacing: 16) {
         VStack(alignment: .leading, spacing: 4) {
           Text("Invite friends")
-            .font(.system(size: 28, weight: .bold, design: .rounded))
+            .font(Theme.sans(30))
           Text("to \(roll.name)")
-            .font(.system(size: 13, design: .rounded))
-            .foregroundStyle(Theme.ink.opacity(0.6))
+            .metaStyle(10)
         }
 
         VStack(spacing: 8) {
@@ -27,11 +26,12 @@ struct InviteView: View {
               .scaledToFit()
               .frame(width: 180, height: 180)
               .padding(16)
-              .background(.white, in: RoundedRectangle(cornerRadius: 16))
+              .background(.white)
+              .overlay(Rectangle().stroke(Theme.line, lineWidth: 1))
           }
           Text("Scan with an iPhone camera")
-            .font(.system(size: 13, design: .rounded))
-            .foregroundStyle(Theme.ink.opacity(0.6))
+            .metaStyle(9)
+            .padding(.top, 4)
         }
         .frame(maxWidth: .infinity)
 
@@ -39,10 +39,10 @@ struct InviteView: View {
 
         ShareLink(item: inviteURL) {
           Label("Share invite link", systemImage: "square.and.arrow.up")
-            .font(.system(size: 17, weight: .bold, design: .rounded))
+            .font(Theme.sans(15, .medium))
             .foregroundStyle(.white)
-            .frame(maxWidth: .infinity, minHeight: 50)
-            .background(Theme.ink, in: RoundedRectangle(cornerRadius: 12))
+            .frame(maxWidth: .infinity, minHeight: 52)
+            .background(Theme.ink)
         }
         .buttonStyle(.plain)
       }
