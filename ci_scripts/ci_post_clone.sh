@@ -25,6 +25,11 @@ echo "Wrote Config/Secrets.xcconfig"
 
 # Package.resolved is written by the local (older) Xcode. Re-resolve with
 # Xcode Cloud's Xcode so the build doesn't reject it as out of date.
+# Xcode Cloud disables automatic resolution, so turn it back on for this step.
+echo "Xcode package defaults before:"
+defaults read com.apple.dt.Xcode 2>/dev/null | grep -i package || echo "  (none)"
+defaults write com.apple.dt.Xcode IDEPackageOnlyUseVersionsFromResolvedFile -bool NO
+defaults write com.apple.dt.Xcode IDEDisableAutomaticPackageResolution -bool NO
 xcodebuild -resolvePackageDependencies \
   -project "$CI_PRIMARY_REPOSITORY_PATH/TwentyFour.xcodeproj" \
   -scheme TwentyFour
