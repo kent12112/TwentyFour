@@ -22,3 +22,9 @@ DEVELOPMENT_TEAM = $DEVELOPMENT_TEAM
 EOF
 
 echo "Wrote Config/Secrets.xcconfig"
+
+# Package.resolved is written by the local (older) Xcode. Re-resolve with
+# Xcode Cloud's Xcode so the build doesn't reject it as out of date.
+xcodebuild -resolvePackageDependencies \
+  -project "$CI_PRIMARY_REPOSITORY_PATH/TwentyFour.xcodeproj" \
+  -scheme TwentyFour
