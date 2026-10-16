@@ -45,6 +45,8 @@ targets:
         NSCameraUsageDescription: TwentyFour uses the camera to shoot frames on your shared roll.
         NSPhotoLibraryAddUsageDescription: Save your developed roll recap to Photos.
         LSApplicationQueriesSchemes: [instagram-stories]
+        # Only iOS's built-in encryption (HTTPS), so skip the export compliance question
+        ITSAppUsesNonExemptEncryption: false
         UIAppFonts:
           - Inter-Regular.ttf
           - Inter-Medium.ttf
