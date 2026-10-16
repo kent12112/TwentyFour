@@ -18,13 +18,16 @@ struct RollDetailView: View {
       header
 
       if current.isDeveloped {
-        ScrollView {
-          DevelopedGrid(
-            frames: frames,
-            photoURLs: photoURLs,
-            frameCount: current.frameCount
-          ) { frame in
-            selectedFrame = frame
+        GeometryReader { geo in
+          ScrollView {
+            DevelopedGrid(
+              frames: frames,
+              photoURLs: photoURLs,
+              frameCount: current.frameCount,
+              width: geo.size.width - 48
+            ) { frame in
+              selectedFrame = frame
+            }
           }
         }
       } else {
