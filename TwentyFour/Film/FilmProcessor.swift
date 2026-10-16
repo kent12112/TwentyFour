@@ -23,9 +23,17 @@ enum FilmProcessor {
     warm.neutral = CIVector(x: 6500, y: 0)
     warm.targetNeutral = CIVector(x: 4600, y: 10)
 
+    // Deep blacks, like raising Black Point in Photos: crush the shadows, leave highlights alone
+    let curve = CIFilter.toneCurve()
+    curve.inputImage = warm.outputImage
+    curve.point0 = CGPoint(x: 0.0, y: 0.0)
+    curve.point1 = CGPoint(x: 0.12, y: 0.02)
+    curve.point2 = CGPoint(x: 0.35, y: 0.28)
+    curve.point3 = CGPoint(x: 0.65, y: 0.63)
+    curve.point4 = CGPoint(x: 1.0, y: 1.0)
+
     let color = CIFilter.colorControls()
-    color.inputImage = warm.outputImage
-    color.contrast = 0.9
+    color.inputImage = curve.outputImage
     color.saturation = 0.8
 
     let vignette = CIFilter.vignette()
