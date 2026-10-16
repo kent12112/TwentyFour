@@ -39,11 +39,12 @@ enum FilmProcessor {
 
     let tone = CIFilter.colorMatrix()
     tone.inputImage = noise
-    tone.rVector = CIVector(x: 0.12, y: 0, z: 0, w: 0)
-    tone.gVector = CIVector(x: 0.12, y: 0, z: 0, w: 0)
-    tone.bVector = CIVector(x: 0.12, y: 0, z: 0, w: 0)
+    // Grain strength; bias = 0.5 - strength / 2 keeps the noise centered on soft light's neutral grey
+    tone.rVector = CIVector(x: 0.06, y: 0, z: 0, w: 0)
+    tone.gVector = CIVector(x: 0.06, y: 0, z: 0, w: 0)
+    tone.bVector = CIVector(x: 0.06, y: 0, z: 0, w: 0)
     tone.aVector = CIVector(x: 0, y: 0, z: 0, w: 0)
-    tone.biasVector = CIVector(x: 0.44, y: 0.44, z: 0.44, w: 1)
+    tone.biasVector = CIVector(x: 0.47, y: 0.47, z: 0.47, w: 1)
 
     let grain = CIFilter.softLightBlendMode()
     grain.inputImage = tone.outputImage?.cropped(to: vignetted.extent)
