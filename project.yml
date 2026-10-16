@@ -24,6 +24,9 @@ targets:
       - path: TwentyFour
     dependencies:
       - package: Supabase
+    # Shared scheme, so Xcode Cloud can find it
+    scheme:
+      testTargets: [TwentyFourTests]
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.kento.twentyfour
