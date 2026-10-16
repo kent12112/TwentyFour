@@ -13,6 +13,8 @@ struct TwentyFourApp: App {
           ProgressView()
         } else if model.session == nil {
           SignInView()
+        } else if model.profileLoadFailed && model.profile == nil {
+          OfflineView(model: model)
         } else if model.profile == nil {
           NameView(model: model)
         } else {

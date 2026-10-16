@@ -8,6 +8,8 @@ final class AppModel {
   var session: Session?
   var isLoading = true
   var profile: Profile?
+  // true when loading the profile failed (e.g. offline) — not the same as "has no profile yet"
+  var profileLoadFailed = false
   var rollsVersion = 0
   var pendingInvite: PendingInvite?
 
@@ -24,6 +26,7 @@ final class AppModel {
         await joinPendingInvite()
       } else {
         profile = nil
+        profileLoadFailed = false
       }
       isLoading = false
     }
@@ -38,15 +41,25 @@ final class AppModel {
         .execute()
         .value
       profile = profiles.first
+      profileLoadFailed = false
     } catch {
+      // keep whatever we had; the app shows a "try again" screen instead of asking for a name
       print("Failed to load profile:", error)
-      profile = nil
+      profileLoadFailed = true
     }
   }
 
-  func createProfile(displayName: String) async {
-    //session is optional because it needs to work when user is signed out
+  func retryLoadProfile() async {
     guard let userId = session?.user.id else { return }
+    await loadProfile(userId: userId)
+    await joinPendingInvite()
+  }
+
+  // returns false if saving failed, so NameView can show an error
+  @discardableResult
+  func createProfile(displayName: String) async -> Bool {
+    //session is optional because it needs to work when user is signed out
+    guard let userId = session?.user.id else { return false }
 
     let newProfile = Profile(id: userId, displayName: displayName, color: "#E5484D")
 
@@ -57,8 +70,15 @@ final class AppModel {
         .execute()
       profile = newProfile
       await joinPendingInvite()
+      return true
+    } catch let error as PostgrestError where error.code == "23505" {
+      // the profile already exists (an earlier save went through but its reply was lost)
+      await loadProfile(userId: userId)
+      await joinPendingInvite()
+      return profile != nil
     } catch {
       print("Failed to create profile:", error)
+      return false
     }
   }
   func handleURL(_ url: URL) async {
