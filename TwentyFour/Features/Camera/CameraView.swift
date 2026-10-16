@@ -138,23 +138,38 @@ struct CameraView: View {
   private func shoot() async {
     isShooting = true
     defer { isShooting = false }
+    let frame: Frame
     do {
-      let frame: Frame = try await SupabaseClient.shared
+      frame = try await SupabaseClient.shared
         .rpc("claim_frame", params: ["p_roll_id": roll.id])
         .execute()
         .value
+    } catch {
+      print("Claim failed:", error)
+      return
+    }
+
+    do {
       let data = try await camera.capturePhoto()
       let processed = FilmProcessor.process(data) ?? data
-      let path = "\(roll.id.uuidString.lowercased())/\(frame.frameNumber).jpg"
-
-      try UploadQueue.shared.add(frame: frame, storagePath: path, data: processed)
-      framesTaken = frame.frameNumber
-
-      Task { await UploadQueue.shared.processAll() }
-      print("Shot frmae", frame.frameNumber, "-> queued for upload")
+      try UploadQueue.shared.add(frame: frame, data: processed)
     } catch {
-      print("Shoot failed:", error)
+      // no photo was saved, so give the frame number back right away
+      print("Shoot failed, releasing frame \(frame.frameNumber):", error)
+      _ = try? await SupabaseClient.shared
+        .rpc("release_frame", params: ["p_frame_id": frame.id])
+        .execute()
+      return
     }
+
+    framesTaken += 1
+    print("Shot frame", frame.frameNumber, "-> queued for upload")
+
+    // tell the server a real photo exists, so its frame is never released
+    _ = try? await SupabaseClient.shared
+      .rpc("mark_captured", params: ["p_frame_id": frame.id])
+      .execute()
+    Task { await UploadQueue.shared.processAll() }
   }
 
   private func listenForCounter() async {
